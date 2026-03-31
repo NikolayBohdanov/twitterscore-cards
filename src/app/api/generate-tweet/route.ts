@@ -93,37 +93,41 @@ async function generateCreative(accounts: AccountInput[], weekNumber: number, to
     throw new Error("GEMINI_API_KEY not configured");
   }
 
-  const accountList = accounts.map(a => `@${a.username} (TwitterScore: ${a.score})`).join(", ");
+  const accountBlock = accounts.map(a => `@${a.username} | TwitterScore: ${a.score}`).join("\n");
 
-  const prompt = `You are a crypto Twitter copywriter for TwitterScore — a platform that tracks real influence on crypto Twitter.
+  const prompt = `You are a crypto Twitter copywriter for @Twiter_score — a platform tracking real influence on crypto Twitter.
 
 Write a UNIQUE, CREATIVE tweet for the Weekly Smart Drop (Week #${weekNumber}).
 
 DATA:
 - ${accounts.length} new smart accounts this week
-- ${totalSmart.toLocaleString()} total smart accounts tracked  
-- Accounts: ${accountList}
+- ${totalSmart.toLocaleString()} total smart accounts tracked
+- 11M+ accounts in the scoring pool
 
-REFERENCE TWEETS (study the tone, NOT copy):
+ACCOUNTS TO INCLUDE (you MUST list ALL of them exactly as shown):
+${accountBlock}
+
+REFERENCE TWEETS for tone and structure:
 ${EXAMPLE_TWEETS}
 
-RULES:
+STRICT RULES:
 1. English only
-2. Must list ALL accounts with their scores (format: @username | TwitterScore: XXX)
-3. Include a strong hook (first line grabs attention)
-4. End with a CTA mentioning @Twiter_score
-5. Use emojis sparingly (2-4 max)
-6. Add whitespace between sections for readability
-7. Keep it under 280 chars for the hook, but the full tweet can be longer (Twitter allows long posts)
-8. Sound authentic crypto Twitter — not corporate, not AI slop
-9. Each time create a DIFFERENT creative angle: storytelling, data-driven, challenge, shoutout, metaphor, etc.
-10. Do NOT include links (they hurt reach)
-11. Do NOT use hashtags (they look spammy)
+2. You MUST include EVERY account listed above with their exact score, formatted as "@username | TwitterScore: XXX" — one per line, with an empty line before and after the list
+3. Hook: first 1-2 lines must grab attention (emoji + bold statement)
+4. After the account list: add 2-4 lines of commentary (what TwitterScore means, why these accounts matter)
+5. End with CTA: "Follow: @Twiter_score"
+6. Use 2-4 emojis max (not every line)
+7. Whitespace between sections for readability
+8. Sound like authentic crypto Twitter — confident, direct, no corporate speak, no AI slop
+9. Each generation should use a DIFFERENT creative angle: data callout, challenge, narrative, metaphor, recognition, etc.
+10. Do NOT include any URLs or links
+11. Do NOT use hashtags
+12. Do NOT add "Week #" in the hook if it feels forced — be natural
 
-Output ONLY the tweet text, nothing else.`;
+Output ONLY the raw tweet text. No explanations, no markdown, no quotes.`;
 
   const res = await fetch(
-    `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`,
+    `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-pro:generateContent?key=${apiKey}`,
     {
       method: "POST",
       headers: { "Content-Type": "application/json" },
