@@ -6,6 +6,7 @@ import SmartDropCard, { AccountData, CardTheme } from "@/components/SmartDropCar
 import SmartDropCardV2 from "@/components/SmartDropCardV2";
 import SmartDropCardV3 from "@/components/SmartDropCardV3";
 import SmartDropCardV4 from "@/components/SmartDropCardV4";
+import TweetPreview from "@/components/TweetPreview";
 
 const versions = [
   { key: "v1", label: "V1", icon: "🎯" },
@@ -180,12 +181,22 @@ export default function SmartDropPage() {
         </div>
 
         {accounts.length > 0 && (
-          <div>
-            <h2 style={{ fontSize: 16, fontWeight: 600, color: "rgba(255,255,255,0.5)", marginBottom: 12 }}>Preview</h2>
-            <div style={{ borderRadius: 12, overflow: "auto", border: "1px solid rgba(255,255,255,0.06)" }}>
-              {renderCard()}
+          <>
+            <div>
+              <h2 style={{ fontSize: 16, fontWeight: 600, color: "rgba(255,255,255,0.5)", marginBottom: 12 }}>Preview</h2>
+              <div style={{ borderRadius: 12, overflow: "auto", border: "1px solid rgba(255,255,255,0.06)" }}>
+                {renderCard()}
+              </div>
             </div>
-          </div>
+
+            <div style={{ marginTop: 32 }}>
+              <TweetPreview
+                accounts={accounts.map(a => ({ username: a.username, score: a.score }))}
+                weekNumber={weekNumber}
+                totalSmart={totalSmart}
+              />
+            </div>
+          </>
         )}
       </div>
     </div>
