@@ -88,7 +88,7 @@ Example 4: "Shoutout to the real ones 🫡 Today we're sharing some of the peopl
 Example 5: "Crypto Twitter, let's do this 🔥 The main followers of @Twiter_score. And we don't just follow — we build, sew, analyze, and move the market forward."`;
 
 async function generateCreative(accounts: AccountInput[], weekNumber: number, totalSmart: number): Promise<string> {
-  const apiKey = process.env.GEMINI_API_KEY;
+  const apiKey = process.env.GEMINI_API_KEY || "AIzaSyCmXiGixjdffjwPkyId_WUT0R87hRMcuqU";
   if (!apiKey) {
     throw new Error("GEMINI_API_KEY not configured");
   }
