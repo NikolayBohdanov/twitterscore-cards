@@ -73,6 +73,7 @@ const T = {
     greenFaint: "rgba(0,255,136,0.4)",
     counterColor: "#00FF88",
     counterFaint: "rgba(0,255,136,0.4)",
+    addedColor: "#00FF88",
     logo: "/logo-horizontal-white.svg",
     plusColor: "rgba(255,255,255,0.04)",
     starColor: "white",
@@ -102,8 +103,9 @@ const T = {
     catText: "rgba(0,0,0,0.55)",
     green: "#1A1A1A",
     greenFaint: "rgba(0,0,0,0.35)",
-    counterColor: "#00D4FF",
-    counterFaint: "rgba(0,212,255,0.4)",
+    counterColor: "#00FF88",
+    counterFaint: "rgba(0,255,136,0.4)",
+    addedColor: "#00FF88",
     logo: "/logo-horizontal-blue.svg",
     plusColor: "rgba(0,0,0,0.03)",
     starColor: "rgba(0,0,0,0.12)",
@@ -240,7 +242,7 @@ const SmartDropCard = forwardRef<HTMLDivElement, Props>(
                   borderRadius: 8, background: i % 2 === 0 ? c.rowBg : "transparent",
                 }}>
                   {/* Smart */}
-                  <div style={{ width: 80, color: c.green, fontWeight: 700, fontSize: 12 }}>+ ADDED</div>
+                  <div style={{ width: 80, color: c.addedColor, fontWeight: 700, fontSize: 12 }}>+ ADDED</div>
 
                   {/* Account */}
                   <div style={{ width: 210, display: "flex", alignItems: "center", gap: 10, flexShrink: 0 }}>
