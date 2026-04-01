@@ -108,6 +108,11 @@ const SmartDropCardV2 = forwardRef<HTMLDivElement, Props>(
               >
                 {getSubtitle(overrides, weekNumber)}
               </div>
+              {overrides?.headerSubtitle && (
+                <div style={{ fontSize: 11, color: "#94A3B8", fontWeight: 500, marginTop: 2 }}>
+                  {overrides.headerSubtitle}
+                </div>
+              )}
             </div>
           </div>
 

@@ -1,6 +1,7 @@
 export interface CardTextOverrides {
   title: string;
   subtitle: string;
+  headerSubtitle: string;
   counterLabel: string;
   footerLeft: string;
   footerCenter: string;
@@ -10,6 +11,7 @@ export interface CardTextOverrides {
 export const DEFAULT_OVERRIDES: CardTextOverrides = {
   title: "Weekly Smart Drop",
   subtitle: "", // auto from weekNumber
+  headerSubtitle: "", // e.g. "March 2026 · DeFi Protocols"
   counterLabel: "", // auto from newCount
   footerLeft: "twitterscore.io",
   footerCenter: "11M+ Accounts Tracked · Real-Time Scoring",

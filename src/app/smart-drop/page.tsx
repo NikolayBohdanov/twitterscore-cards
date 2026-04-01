@@ -221,6 +221,7 @@ export default function SmartDropPage() {
                   {([
                     ["title", "Title", overrides.title],
                     ["subtitle", "Subtitle", overrides.subtitle || `Week #${weekNumber}`],
+                    ["headerSubtitle", "Header Subtitle (e.g. March 2026 · DeFi Protocols)", overrides.headerSubtitle],
                     ["counterLabel", "Counter Label", overrides.counterLabel || `Smart Accounts · +${accounts.length} new`],
                     ["footerLeft", "Footer Left", overrides.footerLeft],
                     ["footerCenter", "Footer Center", overrides.footerCenter],

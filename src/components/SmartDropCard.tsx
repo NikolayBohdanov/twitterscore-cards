@@ -71,6 +71,8 @@ const T = {
     catText: "rgba(255,255,255,0.6)",
     green: "#00FF88",
     greenFaint: "rgba(0,255,136,0.4)",
+    counterColor: "#00FF88",
+    counterFaint: "rgba(0,255,136,0.4)",
     logo: "/logo-horizontal-white.svg",
     plusColor: "rgba(255,255,255,0.04)",
     starColor: "white",
@@ -100,6 +102,8 @@ const T = {
     catText: "rgba(0,0,0,0.55)",
     green: "#1A1A1A",
     greenFaint: "rgba(0,0,0,0.35)",
+    counterColor: "#00D4FF",
+    counterFaint: "rgba(0,212,255,0.4)",
     logo: "/logo-horizontal-blue.svg",
     plusColor: "rgba(0,0,0,0.03)",
     starColor: "rgba(0,0,0,0.12)",
@@ -191,13 +195,20 @@ const SmartDropCard = forwardRef<HTMLDivElement, Props>(
             <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
               <img src={c.logo} alt="TwitterScore" style={{ height: 53 }} crossOrigin="anonymous" />
               <div style={{ width: 1, height: 32, background: c.border }} />
-              <span style={{ fontSize: 24, fontWeight: 900, color: c.green, letterSpacing: -0.3 }}>
-                {getTitle(overrides) === "Weekly Smart Drop" ? `+${newCount} New Smart Accounts` : getTitle(overrides)}
-              </span>
+              <div>
+                <span style={{ fontSize: 24, fontWeight: 900, color: c.green, letterSpacing: -0.3, display: "block" }}>
+                  {getTitle(overrides) === "Weekly Smart Drop" ? `+${newCount} New Smart Accounts` : getTitle(overrides)}
+                </span>
+                {overrides?.headerSubtitle && (
+                  <span style={{ fontSize: 12, fontWeight: 500, color: c.textMuted, display: "block", marginTop: 2 }}>
+                    {overrides.headerSubtitle}
+                  </span>
+                )}
+              </div>
             </div>
             <div style={{ textAlign: "right" }}>
-              <div style={{ fontSize: 20, fontWeight: 900, color: c.green, letterSpacing: -0.5 }}>
-                <span style={{ color: c.greenFaint, fontSize: 15 }}>{prevTotal.toLocaleString()} → </span>
+              <div style={{ fontSize: 20, fontWeight: 900, color: c.counterColor, letterSpacing: -0.5 }}>
+                <span style={{ color: c.counterFaint, fontSize: 15 }}>{prevTotal.toLocaleString()} → </span>
                 {totalSmart.toLocaleString()}
               </div>
               <div style={{ fontSize: 9, color: c.textMuted, textTransform: "uppercase", letterSpacing: 1.5, marginTop: 1 }}>
