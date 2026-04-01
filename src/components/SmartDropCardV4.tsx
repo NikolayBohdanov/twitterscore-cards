@@ -2,6 +2,8 @@
 
 import { forwardRef } from "react";
 import { AccountData } from "./SmartDropCard";
+import EditableText from "./EditableText";
+import { CardTextOverrides, getTitle, getSubtitle, getCounterLabel, getFooterLeft, getFooterCenter, getFooterRight } from "./cardOverrides";
 
 export type CardTheme = "light" | "dark";
 
@@ -12,6 +14,7 @@ interface Props {
   newCount: number;
   showTags?: boolean;
   theme?: CardTheme;
+  overrides?: CardTextOverrides;
 }
 
 const themes = {
@@ -138,7 +141,7 @@ function formatScore(score: number): string {
 }
 
 const SmartDropCardV4 = forwardRef<HTMLDivElement, Props>(
-  ({ accounts, weekNumber, totalSmart, newCount, theme = "light" }, ref) => {
+  ({ accounts, weekNumber, totalSmart, newCount, theme = "light", overrides }, ref) => {
     const t = themes[theme];
     const prevTotal = totalSmart - newCount;
     const maxScore = Math.max(...accounts.map((a) => a.score), 100);
@@ -202,7 +205,7 @@ const SmartDropCardV4 = forwardRef<HTMLDivElement, Props>(
                   letterSpacing: -0.3,
                 }}
               >
-                Weekly Smart Drop
+                {getTitle(overrides)}
               </div>
               <div
                 style={{
@@ -211,7 +214,7 @@ const SmartDropCardV4 = forwardRef<HTMLDivElement, Props>(
                   fontWeight: 500,
                 }}
               >
-                Week #{weekNumber}
+                {getSubtitle(overrides, weekNumber)}
               </div>
             </div>
           </div>
@@ -254,7 +257,7 @@ const SmartDropCardV4 = forwardRef<HTMLDivElement, Props>(
                 fontWeight: 600,
               }}
             >
-              Smart Accounts · +{newCount} new
+              {getCounterLabel(overrides, newCount)}
             </div>
           </div>
         </div>
@@ -617,7 +620,7 @@ const SmartDropCardV4 = forwardRef<HTMLDivElement, Props>(
               letterSpacing: 1,
             }}
           >
-            twitterscore.io
+            {getFooterLeft(overrides)}
           </span>
           <span
             style={{
@@ -626,7 +629,7 @@ const SmartDropCardV4 = forwardRef<HTMLDivElement, Props>(
               fontWeight: 500,
             }}
           >
-            11M+ Accounts Tracked · Real-Time Scoring
+            {getFooterCenter(overrides)}
           </span>
           <span
             style={{
@@ -637,7 +640,7 @@ const SmartDropCardV4 = forwardRef<HTMLDivElement, Props>(
               letterSpacing: 1,
             }}
           >
-            @Twiter_score
+            {getFooterRight(overrides)}
           </span>
         </div>
       </div>

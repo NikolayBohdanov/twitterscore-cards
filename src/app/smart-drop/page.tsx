@@ -7,6 +7,7 @@ import SmartDropCardV2 from "@/components/SmartDropCardV2";
 import SmartDropCardV3 from "@/components/SmartDropCardV3";
 import SmartDropCardV4 from "@/components/SmartDropCardV4";
 import TweetPreview from "@/components/TweetPreview";
+import { CardTextOverrides, DEFAULT_OVERRIDES } from "@/components/cardOverrides";
 
 const versions = [
   { key: "v1", label: "V1", icon: "🎯" },
@@ -27,7 +28,10 @@ export default function SmartDropPage() {
   const [sortByScore, setSortByScore] = useState(true);
   const [showTags, setShowTags] = useState(true);
   const [originalOrder, setOriginalOrder] = useState<AccountData[]>([]);
+  const [overrides, setOverrides] = useState<CardTextOverrides>({ ...DEFAULT_OVERRIDES });
   const cardRef = useRef<HTMLDivElement>(null);
+  const updateOverride = (key: keyof CardTextOverrides, val: string) => setOverrides(prev => ({ ...prev, [key]: val }));
+  const isEdited = JSON.stringify(overrides) !== JSON.stringify(DEFAULT_OVERRIDES);
 
   useEffect(() => {
     if (originalOrder.length === 0) return;
@@ -71,7 +75,7 @@ export default function SmartDropPage() {
   };
 
   const renderCard = () => {
-    const props = { ref: cardRef, accounts, weekNumber, totalSmart, newCount: accounts.length, showTags };
+    const props = { ref: cardRef, accounts, weekNumber, totalSmart, newCount: accounts.length, showTags, overrides };
     switch (version) {
       case "v1": return <SmartDropCard {...props} theme={theme} />;
       case "v2": return <SmartDropCardV2 {...props} />;
@@ -170,10 +174,18 @@ export default function SmartDropPage() {
               cursor: loading ? "wait" : "pointer",
             }}>{loading ? "Loading..." : "⚡ Generate Card"}</button>
             {accounts.length > 0 && (
-              <button onClick={downloadPng} style={{
-                padding: "10px 24px", background: "#00CC66", border: "none",
-                borderRadius: 8, color: "white", fontSize: 14, fontWeight: 700, cursor: "pointer",
-              }}>📥 Download PNG</button>
+              <>
+                <button onClick={downloadPng} style={{
+                  padding: "10px 24px", background: "#00CC66", border: "none",
+                  borderRadius: 8, color: "white", fontSize: 14, fontWeight: 700, cursor: "pointer",
+                }}>📥 Download PNG</button>
+                {isEdited && (
+                  <button onClick={() => setOverrides({ ...DEFAULT_OVERRIDES })} style={{
+                    padding: "10px 24px", background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.15)",
+                    borderRadius: 8, color: "rgba(255,255,255,0.6)", fontSize: 13, fontWeight: 600, cursor: "pointer",
+                  }}>↩️ Reset Texts</button>
+                )}
+              </>
             )}
           </div>
 
@@ -183,9 +195,51 @@ export default function SmartDropPage() {
         {accounts.length > 0 && (
           <>
             <div>
-              <h2 style={{ fontSize: 16, fontWeight: 600, color: "rgba(255,255,255,0.5)", marginBottom: 12 }}>Preview</h2>
+              <div style={{ display: "flex", alignItems: "baseline", gap: 12, marginBottom: 12 }}>
+                <h2 style={{ fontSize: 16, fontWeight: 600, color: "rgba(255,255,255,0.5)", margin: 0 }}>Preview</h2>
+                <span style={{ fontSize: 11, color: "rgba(255,255,255,0.25)" }}>✏️ Edit texts below — changes update the card instantly</span>
+              </div>
               <div style={{ borderRadius: 12, overflow: "auto", border: "1px solid rgba(255,255,255,0.06)" }}>
                 {renderCard()}
+              </div>
+
+              {/* Editable text fields */}
+              <div style={{
+                background: "rgba(255,255,255,0.03)", borderRadius: 12, padding: 20, marginTop: 16,
+                border: "1px solid rgba(255,255,255,0.06)",
+              }}>
+                <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 12 }}>
+                  <span style={{ fontSize: 13, fontWeight: 600, color: "rgba(255,255,255,0.5)" }}>✏️ Edit Card Texts</span>
+                  {isEdited && (
+                    <button onClick={() => setOverrides({ ...DEFAULT_OVERRIDES })} style={{
+                      padding: "4px 12px", background: "transparent", border: "1px solid rgba(255,255,255,0.15)",
+                      borderRadius: 6, color: "rgba(255,255,255,0.4)", fontSize: 11, cursor: "pointer",
+                    }}>↩️ Reset All</button>
+                  )}
+                </div>
+                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
+                  {([
+                    ["title", "Title", overrides.title],
+                    ["subtitle", "Subtitle", overrides.subtitle || `Week #${weekNumber}`],
+                    ["counterLabel", "Counter Label", overrides.counterLabel || `Smart Accounts · +${accounts.length} new`],
+                    ["footerLeft", "Footer Left", overrides.footerLeft],
+                    ["footerCenter", "Footer Center", overrides.footerCenter],
+                    ["footerRight", "Footer Right", overrides.footerRight],
+                  ] as [keyof CardTextOverrides, string, string][]).map(([key, label, val]) => (
+                    <div key={key}>
+                      <label style={{ fontSize: 10, color: "rgba(255,255,255,0.35)", display: "block", marginBottom: 3 }}>{label}</label>
+                      <input
+                        value={val}
+                        onChange={e => updateOverride(key, e.target.value)}
+                        style={{
+                          width: "100%", padding: "6px 10px", fontSize: 13, color: "#fff",
+                          background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.1)",
+                          borderRadius: 6, boxSizing: "border-box" as const,
+                        }}
+                      />
+                    </div>
+                  ))}
+                </div>
               </div>
             </div>
 

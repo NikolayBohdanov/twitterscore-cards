@@ -1,6 +1,7 @@
 "use client";
 
 import { forwardRef } from "react";
+import { CardTextOverrides, getTitle, getCounterLabel, getFooterLeft, getFooterCenter, getFooterRight } from "./cardOverrides";
 
 export interface AccountData {
   username: string;
@@ -24,6 +25,7 @@ interface Props {
   newCount: number;
   theme?: CardTheme;
   showTags?: boolean;
+  overrides?: CardTextOverrides;
 }
 
 // Official TwitterScore formula: y = round(⁴√(score × 100000))
@@ -109,7 +111,7 @@ const T = {
 };
 
 const SmartDropCard = forwardRef<HTMLDivElement, Props>(
-  ({ accounts, weekNumber, totalSmart, newCount, theme = "dark", showTags = true }, ref) => {
+  ({ accounts, weekNumber, totalSmart, newCount, theme = "dark", showTags = true, overrides }, ref) => {
     const c = T[theme];
     const prevTotal = totalSmart - newCount;
     const rowCount = accounts.length;
@@ -190,7 +192,7 @@ const SmartDropCard = forwardRef<HTMLDivElement, Props>(
               <img src={c.logo} alt="TwitterScore" style={{ height: 53 }} crossOrigin="anonymous" />
               <div style={{ width: 1, height: 32, background: c.border }} />
               <span style={{ fontSize: 24, fontWeight: 900, color: c.green, letterSpacing: -0.3 }}>
-                +{newCount} New Smart Accounts
+                {getTitle(overrides) === "Weekly Smart Drop" ? `+${newCount} New Smart Accounts` : getTitle(overrides)}
               </span>
             </div>
             <div style={{ textAlign: "right" }}>
@@ -199,7 +201,7 @@ const SmartDropCard = forwardRef<HTMLDivElement, Props>(
                 {totalSmart.toLocaleString()}
               </div>
               <div style={{ fontSize: 9, color: c.textMuted, textTransform: "uppercase", letterSpacing: 1.5, marginTop: 1 }}>
-                Smart Accounts (+{newCount} this week)
+                {getCounterLabel(overrides, newCount)}
               </div>
             </div>
           </div>
@@ -289,9 +291,9 @@ const SmartDropCard = forwardRef<HTMLDivElement, Props>(
 
           {/* Footer */}
           <div style={{ display: "flex", justifyContent: "space-between", padding: "8px 28px", borderTop: `1px solid ${c.borderFaint}`, flexShrink: 0 }}>
-            <span style={{ fontSize: 11, color: c.footer, textTransform: "uppercase", letterSpacing: 1, fontWeight: 500 }}>twitterscore.io</span>
-            <span style={{ fontSize: 11, color: c.footer, textTransform: "uppercase", letterSpacing: 1, fontWeight: 500 }}>11M+ Accounts Tracked · Real-Time Scoring</span>
-            <span style={{ fontSize: 11, color: c.footer, textTransform: "uppercase", letterSpacing: 1, fontWeight: 500 }}>@Twiter_score</span>
+            <span style={{ fontSize: 11, color: c.footer, textTransform: "uppercase", letterSpacing: 1, fontWeight: 500 }}>{getFooterLeft(overrides)}</span>
+            <span style={{ fontSize: 11, color: c.footer, textTransform: "uppercase", letterSpacing: 1, fontWeight: 500 }}>{getFooterCenter(overrides)}</span>
+            <span style={{ fontSize: 11, color: c.footer, textTransform: "uppercase", letterSpacing: 1, fontWeight: 500 }}>{getFooterRight(overrides)}</span>
           </div>
         </div>
       </div>
