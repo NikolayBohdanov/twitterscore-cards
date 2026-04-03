@@ -25,9 +25,9 @@ const themes = {
     blob1: "rgba(100,50,255,0.06)", blob2: "rgba(0,150,255,0.05)", blob3: "rgba(5,68,253,0.08)",
     frameBg: "#FFFFFF",
     frameBorder: "rgba(0,0,0,0.1)",
-    textMuted: "rgba(255,255,255,0.5)",
-    footer: "rgba(255,255,255,0.5)",
-    urlBarBg: "rgba(0,0,0,0.05)",
+    textMuted: "rgba(0,0,0,0.4)",
+    footer: "rgba(0,0,0,0.4)",
+    urlBarBg: "rgba(0,0,0,0.06)",
     windowDots: ["#FF5F57", "#FEBC2E", "#28C840"],
     shadow: "0 4px 20px rgba(0,0,0,0.2)",
   },
@@ -77,7 +77,8 @@ const CollageCard = forwardRef<HTMLDivElement, CollageProps>(
                 background: c.urlBarBg,
                 borderRadius: 4,
                 padding: "3px 8px",
-                fontSize: 9,
+                fontSize: 10,
+                fontWeight: 500,
                 color: c.textMuted,
               }}
             >
@@ -166,9 +167,9 @@ const CollageCard = forwardRef<HTMLDivElement, CollageProps>(
 
         {/* Footer */}
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", paddingTop: 8, flexShrink: 0 }}>
-          <span style={{ fontSize: 10, color: c.footer, fontWeight: 500, textTransform: "uppercase", letterSpacing: 1 }}>twitterscore.io</span>
-          <span style={{ fontSize: 10, color: c.footer }}>Real-Time Social Intelligence for Crypto</span>
-          <span style={{ fontSize: 10, color: c.footer, fontWeight: 500, textTransform: "uppercase", letterSpacing: 1 }}>@Twiter_score</span>
+          <span style={{ fontSize: 11, color: c.footer, fontWeight: 600, textTransform: "uppercase", letterSpacing: 1 }}>twitterscore.io</span>
+          <span style={{ fontSize: 11, color: c.footer, fontWeight: 500 }}>Real-Time Social Intelligence for Crypto</span>
+          <span style={{ fontSize: 11, color: c.footer, fontWeight: 600, textTransform: "uppercase", letterSpacing: 1 }}>@Twiter_score</span>
         </div>
       </div>
     );
