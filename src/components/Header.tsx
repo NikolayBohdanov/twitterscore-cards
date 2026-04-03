@@ -8,6 +8,7 @@ const tabs = [
   { href: "/projects", label: "📊 Projects" },
   { href: "/updates", label: "🚀 Product Updates" },
   { href: "/spotlight", label: "🔍 Spotlight" },
+  { href: "/collage", label: "🖼️ Collage" },
 ];
 
 export default function Header() {
