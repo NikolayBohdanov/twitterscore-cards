@@ -209,9 +209,13 @@ const SmartDropCard = forwardRef<HTMLDivElement, Props>(
               </div>
             </div>
             <div style={{ textAlign: "right" }}>
-              <div style={{ fontSize: 20, fontWeight: 900, color: c.counterColor, letterSpacing: -0.5 }}>
-                <span style={{ color: c.counterFaint, fontSize: 15 }}>{prevTotal.toLocaleString()} → </span>
-                {totalSmart.toLocaleString()}
+              <div style={{ fontSize: 20, fontWeight: 900, color: c.counterColor, letterSpacing: -0.5, display: "flex", alignItems: "center", justifyContent: "flex-end", gap: 6 }}>
+                <span style={{ color: c.counterFaint, fontSize: 15 }}>{prevTotal.toLocaleString()}</span>
+                {/* Inline SVG arrow — font-independent, identical in browser and headless Chromium */}
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" style={{ flexShrink: 0, opacity: 0.55 }} aria-hidden="true">
+                  <path d="M5 12h14m-5-5l5 5-5 5" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
+                </svg>
+                <span>{totalSmart.toLocaleString()}</span>
               </div>
               <div style={{ fontSize: 9, color: c.textMuted, textTransform: "uppercase", letterSpacing: 1.5, marginTop: 1 }}>
                 {getCounterLabel(overrides, newCount)}
