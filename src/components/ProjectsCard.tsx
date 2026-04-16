@@ -430,9 +430,13 @@ function BarsMetricLayout({ accounts, title, subtitle, theme, showTags = true, m
               {/* TwitterScore bar — same gradient logic as BarsLayout:
                   width = scoreToPercent(score) clamped min 12, with scoreBarBgSize
                   controlling gradient stretch so low scores only show the red portion.
-                  Score growth (weekDiff) shows as ▲+X/▼-X inside the bar. */}
+                  Growth arrow: prefer weekDiff, fall back to monthDiff when API
+                  returns 0 for week (TwitterScore API often rounds weekDiff → 0 for
+                  stable established accounts; monthDiff is usually where the signal is). */}
               {(() => {
-                const sdiff = acc.weekDiff || 0;
+                const sdiff = acc.weekDiff !== undefined && acc.weekDiff !== 0
+                  ? acc.weekDiff
+                  : (acc.monthDiff || 0);
                 return (
                   <div style={{ flex: 1, height: 28, borderRadius: 14, background: b.barBg, overflow: "hidden", display: "flex", marginRight: 10 }}>
                     {scoreToPercent(acc.score) > 0 && (
