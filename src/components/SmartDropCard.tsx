@@ -199,7 +199,7 @@ const SmartDropCard = forwardRef<HTMLDivElement, Props>(
               <div style={{ width: 1, height: 32, background: c.border }} />
               <div>
                 <span style={{ fontSize: 24, fontWeight: 900, color: c.green, letterSpacing: -0.3, display: "block" }}>
-                  {getTitle(overrides) === "Weekly Smart Drop" ? `+${newCount} New Smart Accounts` : getTitle(overrides)}
+                  {`+${newCount} New Smart Accounts`}
                 </span>
                 {overrides?.headerSubtitle && (
                   <span style={{ fontSize: 12, fontWeight: 500, color: c.textMuted, display: "block", marginTop: 2 }}>

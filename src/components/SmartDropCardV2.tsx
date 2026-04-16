@@ -1,7 +1,7 @@
 "use client";
 
 import { forwardRef } from "react";
-import { AccountData } from "./SmartDropCard";
+import { AccountData, CardTheme } from "./SmartDropCard";
 import { CardTextOverrides, getTitle, getSubtitle, getCounterLabel, getFooterLeft, getFooterCenter, getFooterRight } from "./cardOverrides";
 
 interface Props {
@@ -11,6 +11,7 @@ interface Props {
   newCount: number;
   showTags?: boolean;
   overrides?: CardTextOverrides;
+  theme?: CardTheme;
 }
 
 const SCORE_GRADIENT = "linear-gradient(90deg, #FF4B04 0%, #F2DB06 52%, #12E83B 100%)";
@@ -32,10 +33,28 @@ function getScoreTextColor(score: number): string {
   return "#94A3B8";
 }
 
+const themes = {
+  light: {
+    bg: "white", text: "#0F172A", textSec: "#94A3B8", textMuted: "#64748B",
+    accent: "#0544FD", accentLight: "#F0F4FF", border: "#E2E8F0",
+    rowEven: "#F8FAFC", rowOdd: "white", barBg: "#F1F5F9",
+    badgeBg: "#ECFDF5", badgeText: "#059669", logo: "/logo-blue.svg",
+    avatarBorder: "#E2E8F0", avatarBg: "#F1F5F9",
+  },
+  dark: {
+    bg: "#0B1120", text: "#F1F5F9", textSec: "rgba(255,255,255,0.4)", textMuted: "rgba(255,255,255,0.5)",
+    accent: "#3B82F6", accentLight: "rgba(59,130,246,0.1)", border: "rgba(255,255,255,0.1)",
+    rowEven: "rgba(255,255,255,0.03)", rowOdd: "transparent", barBg: "rgba(255,255,255,0.08)",
+    badgeBg: "rgba(0,255,136,0.1)", badgeText: "#00FF88", logo: "/logo-horizontal-white.svg",
+    avatarBorder: "rgba(255,255,255,0.1)", avatarBg: "rgba(255,255,255,0.05)",
+  },
+};
+
 const SmartDropCardV2 = forwardRef<HTMLDivElement, Props>(
-  ({ accounts, weekNumber, totalSmart, newCount, overrides }, ref) => {
+  ({ accounts, weekNumber, totalSmart, newCount, overrides, theme = "light" }, ref) => {
     const prevTotal = totalSmart - newCount;
     const maxScore = Math.max(...accounts.map((a) => a.score), 100);
+    const c = themes[theme];
 
     return (
       <div
@@ -45,7 +64,7 @@ const SmartDropCardV2 = forwardRef<HTMLDivElement, Props>(
           height: 675,
           position: "relative",
           overflow: "hidden",
-          background: "white",
+          background: c.bg,
           fontFamily: "'Inter', sans-serif",
           display: "flex",
           flexDirection: "column",
@@ -72,7 +91,7 @@ const SmartDropCardV2 = forwardRef<HTMLDivElement, Props>(
         >
           <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
             <img
-              src="/logo-blue.svg"
+              src={c.logo}
               alt="TwitterScore"
               style={{ height: 56 }}
               crossOrigin="anonymous"
@@ -85,7 +104,7 @@ const SmartDropCardV2 = forwardRef<HTMLDivElement, Props>(
               style={{
                 width: 1,
                 height: 28,
-                background: "#E2E8F0",
+                background: c.border,
               }}
             />
             <div>
@@ -93,7 +112,7 @@ const SmartDropCardV2 = forwardRef<HTMLDivElement, Props>(
                 style={{
                   fontSize: 18,
                   fontWeight: 800,
-                  color: "#0F172A",
+                  color: c.text,
                   letterSpacing: -0.3,
                 }}
               >
@@ -102,7 +121,7 @@ const SmartDropCardV2 = forwardRef<HTMLDivElement, Props>(
               <div
                 style={{
                   fontSize: 12,
-                  color: "#94A3B8",
+                  color: c.textSec,
                   fontWeight: 500,
                 }}
               >
@@ -119,7 +138,7 @@ const SmartDropCardV2 = forwardRef<HTMLDivElement, Props>(
           {/* Counter */}
           <div
             style={{
-              background: "#F0F4FF",
+              background: c.accentLight,
               borderRadius: 12,
               padding: "10px 20px",
               textAlign: "right",
@@ -129,7 +148,7 @@ const SmartDropCardV2 = forwardRef<HTMLDivElement, Props>(
               style={{
                 fontSize: 22,
                 fontWeight: 900,
-                color: "#0544FD",
+                color: c.accent,
                 letterSpacing: -0.5,
               }}
             >
@@ -141,7 +160,7 @@ const SmartDropCardV2 = forwardRef<HTMLDivElement, Props>(
             <div
               style={{
                 fontSize: 10,
-                color: "#64748B",
+                color: c.textMuted,
                 textTransform: "uppercase",
                 letterSpacing: 1.2,
                 fontWeight: 600,
@@ -153,7 +172,7 @@ const SmartDropCardV2 = forwardRef<HTMLDivElement, Props>(
         </div>
 
         {/* Divider */}
-        <div style={{ height: 1, background: "#E2E8F0", margin: "0 40px", flexShrink: 0 }} />
+        <div style={{ height: 1, background: c.border, margin: "0 40px", flexShrink: 0 }} />
 
         {/* Account list */}
         <div
@@ -175,7 +194,7 @@ const SmartDropCardV2 = forwardRef<HTMLDivElement, Props>(
                 alignItems: "center",
                 padding: "8px 16px",
                 borderRadius: 12,
-                background: i % 2 === 0 ? "#F8FAFC" : "white",
+                background: i % 2 === 0 ? c.rowEven : c.rowOdd,
                 gap: 16,
               }}
             >
@@ -185,7 +204,7 @@ const SmartDropCardV2 = forwardRef<HTMLDivElement, Props>(
                   width: 28,
                   fontSize: 14,
                   fontWeight: 700,
-                  color: i < 3 ? "#0544FD" : "#94A3B8",
+                  color: i < 3 ? c.accent : c.textSec,
                   textAlign: "center",
                   flexShrink: 0,
                 }}
@@ -200,8 +219,8 @@ const SmartDropCardV2 = forwardRef<HTMLDivElement, Props>(
                   height: 48,
                   borderRadius: "50%",
                   overflow: "hidden",
-                  border: "2px solid #E2E8F0",
-                  background: "#F1F5F9",
+                  border: `2px solid ${c.avatarBorder}`,
+                  background: c.avatarBg,
                   flexShrink: 0,
                 }}
               >
@@ -226,7 +245,7 @@ const SmartDropCardV2 = forwardRef<HTMLDivElement, Props>(
                       justifyContent: "center",
                       fontSize: 18,
                       fontWeight: 700,
-                      color: "#94A3B8",
+                      color: c.textSec,
                     }}
                   >
                     {acc.username[0]?.toUpperCase()}
@@ -240,7 +259,7 @@ const SmartDropCardV2 = forwardRef<HTMLDivElement, Props>(
                   style={{
                     fontSize: 15,
                     fontWeight: 700,
-                    color: "#0F172A",
+                    color: c.text,
                     lineHeight: 1.2,
                     overflow: "hidden",
                     textOverflow: "ellipsis",
@@ -252,7 +271,7 @@ const SmartDropCardV2 = forwardRef<HTMLDivElement, Props>(
                 <div
                   style={{
                     fontSize: 12,
-                    color: "#94A3B8",
+                    color: c.textSec,
                     fontWeight: 500,
                   }}
                 >
@@ -266,7 +285,7 @@ const SmartDropCardV2 = forwardRef<HTMLDivElement, Props>(
                   style={{
                     flex: 1,
                     height: 24,
-                    background: "#F1F5F9",
+                    background: c.barBg,
                     borderRadius: 12,
                     overflow: "hidden",
                     position: "relative",
@@ -309,8 +328,8 @@ const SmartDropCardV2 = forwardRef<HTMLDivElement, Props>(
               >
                 <div
                   style={{
-                    background: "#ECFDF5",
-                    color: "#059669",
+                    background: c.badgeBg,
+                    color: c.badgeText,
                     padding: "4px 10px",
                     borderRadius: 8,
                     fontSize: 11,
@@ -331,7 +350,7 @@ const SmartDropCardV2 = forwardRef<HTMLDivElement, Props>(
             justifyContent: "space-between",
             alignItems: "center",
             padding: "12px 40px",
-            borderTop: "1px solid #E2E8F0",
+            borderTop: `1px solid ${c.border}`,
             flexShrink: 0,
           }}
         >

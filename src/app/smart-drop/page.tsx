@@ -76,15 +76,14 @@ export default function SmartDropPage() {
     const props = { ref: cardRef, accounts, weekNumber, totalSmart, newCount: accounts.length, showTags, overrides };
     switch (version) {
       case "v1": return <SmartDropCard {...props} theme={theme} />;
-      case "v2": return <SmartDropCardV2 {...props} />;
+      case "v2": return <SmartDropCardV2 {...props} theme={theme} />;
       case "v3": return <SmartDropCardV3 {...props} theme={theme} />;
       case "v4": return <SmartDropCardV4 {...props} theme={theme} />;
       default: return <SmartDropCard {...props} theme={theme} />;
     }
   };
 
-  // V2 doesn't support theme
-  const supportsTheme = version !== "v2";
+  const supportsTheme = true; // both V1 and V2 support theme
 
   return (
     <div style={{ padding: 32 }}>
@@ -218,7 +217,6 @@ export default function SmartDropPage() {
                 <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
                   {((version === "v1" ? [
                     ["titleBarText" as const, "Window Title (title bar)", overrides.titleBarText || "TwitterScore Database"],
-                    ["title" as const, "Header Title (green text)", overrides.title],
                     ["headerSubtitle" as const, "Header Subtitle (below title)", overrides.headerSubtitle],
                     ["counterLabel" as const, "Counter Label (right side)", overrides.counterLabel || `Smart Accounts · +${accounts.length} new`],
                     ["footerLeft" as const, "Footer Left", overrides.footerLeft],
