@@ -12,8 +12,6 @@ import { CardTextOverrides, DEFAULT_OVERRIDES } from "@/components/cardOverrides
 const versions = [
   { key: "v1", label: "V1", icon: "🎯" },
   { key: "v2", label: "V2", icon: "✨" },
-  { key: "v3", label: "V3", icon: "🎨" },
-  { key: "v4", label: "V4 + Smart", icon: "⚡" },
 ];
 
 export default function SmartDropPage() {
