@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef, useEffect } from "react";
+import { Suspense, useState, useRef, useEffect } from "react";
 import { useSearchParams } from "next/navigation";
 import SmartDropCard, { AccountData, CardTheme } from "@/components/SmartDropCard";
 import SmartDropCardV2 from "@/components/SmartDropCardV2";
@@ -33,6 +33,14 @@ import { CardTextOverrides, DEFAULT_OVERRIDES } from "@/components/cardOverrides
  * Use Playwright to screenshot the #card element.
  */
 export default function RenderSmartDropPage() {
+  return (
+    <Suspense fallback={<div style={{ background: "#000", color: "#fff", height: "100vh", display: "flex", alignItems: "center", justifyContent: "center" }}>Loading...</div>}>
+      <RenderSmartDropInner />
+    </Suspense>
+  );
+}
+
+function RenderSmartDropInner() {
   const searchParams = useSearchParams();
   const [accounts, setAccounts] = useState<AccountData[]>([]);
   const [loading, setLoading] = useState(true);
