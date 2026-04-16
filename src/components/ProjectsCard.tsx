@@ -323,6 +323,9 @@ function BarsLayout({ accounts, title, subtitle, diffPeriod, theme, showTags = t
 // ============ LAYOUT 1C: BARS + GENERIC METRIC (TVL / Fundraising / Revenue) ============
 // Like BarsLayout, but ranks by a custom numeric metric (e.g. TVL) instead of TwitterScore.
 // Bar length scales to max metric value. TS score moves to a secondary column.
+//
+// Visual rule: metric bars are a SOLID brand color (not the red→green SCORE_GRADIENT).
+// The gradient is reserved for TwitterScore — different semantics, different viz.
 function BarsMetricLayout({ accounts, title, subtitle, theme, showTags = true, metricColumn }: Omit<Props, "layout">) {
   const b = barsThemes[theme || "dark"];
   const metric = metricColumn || { label: "Metric", displays: [] as string[] };
@@ -335,15 +338,6 @@ function BarsMetricLayout({ accounts, title, subtitle, theme, showTags = true, m
     return tags.slice(0, 3);
   });
   const maxTagsWidth = Math.max(80, ...allTagsPerAccount.map((tags) => tags.reduce((sum, tag) => sum + tag.length * 7 + 18 + 4, 0)));
-
-  // Bar length scaling — relative to max metric value so #1 fills the bar
-  const rawValues = metric.values || [];
-  const maxVal = rawValues.length ? Math.max(...rawValues) : 1;
-  const barPct = (i: number): number => {
-    if (!rawValues.length || !rawValues[i]) return 0;
-    const raw = (rawValues[i] / maxVal) * 100;
-    return Math.max(raw, 12); // min 12% floor so smallest bar is still visible
-  };
 
   const rowCount = accounts.length;
   const rowSpacing = 4;
@@ -371,7 +365,14 @@ function BarsMetricLayout({ accounts, title, subtitle, theme, showTags = true, m
         <div style={{ width: 28, marginRight: 12 }} />
         <div style={{ width: 190, fontSize: 11, textTransform: "uppercase", letterSpacing: 1.2, color: b.textFaint, fontWeight: 700 }}>Project</div>
         <div style={{ width: 60, fontSize: 11, textTransform: "uppercase", letterSpacing: 1.2, color: b.textFaint, fontWeight: 700, textAlign: "center" }}>TS</div>
-        <div style={{ flex: 1, fontSize: 11, textTransform: "uppercase", letterSpacing: 1.2, color: b.textFaint, fontWeight: 700 }}>{metric.label}</div>
+        <div style={{ flex: 1, fontSize: 11, textTransform: "uppercase", letterSpacing: 1.2, color: b.textFaint, fontWeight: 700 }}>
+          {metric.label}
+          {metric.diffs && metric.diffs.length > 0 && (
+            <span style={{ marginLeft: 6, fontSize: 10, letterSpacing: 0.8, color: b.textFaint, textTransform: "none", fontWeight: 600 }}>
+              (7d)
+            </span>
+          )}
+        </div>
         <div style={{ width: maxTagsWidth, fontSize: 11, textTransform: "uppercase", letterSpacing: 1.2, color: b.textFaint, fontWeight: 700 }}>Tags</div>
       </div>
       <div style={{ height: 1, background: b.borderFaint, margin: "0 28px 4px" }} />
@@ -381,7 +382,6 @@ function BarsMetricLayout({ accounts, title, subtitle, theme, showTags = true, m
         {accounts.map((acc, i) => {
           const display = metric.displays[i] || "—";
           const diff = metric.diffs?.[i];
-          const pct = barPct(i);
           const allTags: string[] = [];
           if (acc.category && !["Top Smart", "Smart", "Rising", "New"].includes(acc.category)) allTags.push(acc.category);
           if (showTags && acc.tags) for (const t of acc.tags) { if (!allTags.includes(t)) allTags.push(t); }
@@ -411,43 +411,24 @@ function BarsMetricLayout({ accounts, title, subtitle, theme, showTags = true, m
                 {acc.score > 0 ? formatScore(acc.score) : "—"}
               </div>
 
-              {/* Metric bar. If bar is too narrow to fit the display text (<30%),
-                  render the label OUTSIDE the bar on the right — avoids clipping
-                  like "$62.2M" becoming "2M" when only 12% of the row is filled. */}
-              <div style={{ flex: 1, height: 28, borderRadius: 14, background: b.barBg, overflow: "hidden", display: "flex", alignItems: "center", position: "relative" }}>
-                {pct > 0 && (
-                  <div style={{
-                    width: `${pct}%`, height: "100%", borderRadius: 14,
-                    background: SCORE_GRADIENT,
-                    display: "flex", alignItems: "center", justifyContent: "flex-end", paddingRight: pct >= 30 ? 10 : 0,
-                    flexShrink: 0,
+              {/* Metric column — plain text.
+                  NO filled bar: gradient fill is reserved for TwitterScore rendering,
+                  where bar width encodes score magnitude via scoreBarBgSize. For TVL,
+                  the number alone + a colored delta badge is the clearest signal. */}
+              <div style={{ flex: 1, display: "flex", alignItems: "center", gap: 8, padding: "0 12px" }}>
+                <span style={{ fontSize: 16, fontWeight: 800, color: b.text, whiteSpace: "nowrap" }}>
+                  {display}
+                </span>
+                {diff !== undefined && diff !== 0 && (
+                  <span style={{
+                    fontSize: 11, fontWeight: 700,
+                    padding: "2px 8px", borderRadius: 6,
+                    background: diff > 0 ? "rgba(34,197,94,0.15)" : "rgba(239,68,68,0.15)",
+                    color: diff > 0 ? "#22C55E" : "#EF4444",
+                    whiteSpace: "nowrap",
                   }}>
-                    {pct >= 30 && (
-                      <span style={{ fontSize: 12, fontWeight: 900, color: "#fff", textShadow: "0 1px 3px rgba(0,0,0,0.5)", display: "flex", alignItems: "center", gap: 6, whiteSpace: "nowrap" }}>
-                        {display}
-                        {diff !== undefined && diff !== 0 && (
-                          <span style={{ fontSize: 10, fontWeight: 700, color: diff > 0 ? "#B6FFD8" : "#FFB6B6" }}>
-                            {diff > 0 ? `▲+${diff.toFixed(1)}%` : `▼${diff.toFixed(1)}%`}
-                          </span>
-                        )}
-                      </span>
-                    )}
-                  </div>
-                )}
-                {pct > 0 && pct < 30 && (
-                  <span style={{ fontSize: 12, fontWeight: 800, color: b.text, marginLeft: 8, display: "flex", alignItems: "center", gap: 6, whiteSpace: "nowrap" }}>
-                    {display}
-                    {diff !== undefined && diff !== 0 && (
-                      <span style={{ fontSize: 10, fontWeight: 700, color: diff > 0 ? "#22C55E" : "#EF4444" }}>
-                        {diff > 0 ? `▲+${diff.toFixed(1)}%` : `▼${diff.toFixed(1)}%`}
-                      </span>
-                    )}
+                    {diff > 0 ? `+${diff.toFixed(1)}%` : `${diff.toFixed(1)}%`}
                   </span>
-                )}
-                {pct === 0 && (
-                  <div style={{ padding: "0 10px", display: "flex", alignItems: "center", color: b.textMuted, fontSize: 12, fontWeight: 700 }}>
-                    {display}
-                  </div>
                 )}
               </div>
 

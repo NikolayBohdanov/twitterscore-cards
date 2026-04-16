@@ -3,15 +3,55 @@
 import { useState, useRef, useCallback, useEffect } from "react";
 import { toPng } from "html-to-image";
 import { AccountData } from "@/components/SmartDropCard";
-import ProjectsCard, { ProjectsLayout, ProjectsTheme, CustomColumnData } from "@/components/ProjectsCard";
+import ProjectsCard, { ProjectsLayout, ProjectsTheme, CustomColumnData, MetricColumn } from "@/components/ProjectsCard";
 
 const layouts: { id: ProjectsLayout; label: string; icon: string }[] = [
   { id: "bars", label: "Bar Chart", icon: "📊" },
+  { id: "bars-metric", label: "Bar Chart (Metric)", icon: "📈" },
   { id: "bars-custom", label: "Bar Chart (Custom)", icon: "📝" },
   { id: "grid", label: "Card Grid", icon: "🔲" },
   { id: "podium", label: "Podium", icon: "🏆" },
   { id: "tiles", label: "Tiles", icon: "📋" },
 ];
+
+// Per-row data entered manually for Bar Chart (Metric) layout.
+// display = formatted string shown on card ("$746.7M"), value = raw number for bar scaling,
+// diff = % change rendered as colored badge (optional).
+interface MetricRow {
+  display: string;
+  value: string;
+  diff: string;
+}
+
+// Build the MetricColumn prop from per-row form state. Returns undefined if no
+// displays filled, so ProjectsCard falls back to the default score-based layout.
+function buildMetricColumn(accounts: AccountData[], rows: Record<number, MetricRow>, label: string): MetricColumn | undefined {
+  if (accounts.length === 0) return undefined;
+  const displays: string[] = [];
+  const values: number[] = [];
+  const diffs: number[] = [];
+  let anyDisplay = false;
+  let anyValue = false;
+  let anyDiff = false;
+  for (let i = 0; i < accounts.length; i++) {
+    const r = rows[i] || { display: "", value: "", diff: "" };
+    displays.push(r.display);
+    if (r.display) anyDisplay = true;
+    const v = parseFloat(r.value);
+    values.push(Number.isFinite(v) ? v : 0);
+    if (Number.isFinite(v) && v !== 0) anyValue = true;
+    const d = parseFloat(r.diff);
+    diffs.push(Number.isFinite(d) ? d : 0);
+    if (Number.isFinite(d) && d !== 0) anyDiff = true;
+  }
+  if (!anyDisplay) return undefined;
+  return {
+    label,
+    displays,
+    values: anyValue ? values : undefined,
+    diffs: anyDiff ? diffs : undefined,
+  };
+}
 
 export default function ProjectsPage() {
   const [input, setInput] = useState("");
@@ -28,6 +68,8 @@ export default function ProjectsPage() {
   const [showTags, setShowTags] = useState(true);
   const [customHeader, setCustomHeader] = useState("Notes");
   const [customData, setCustomData] = useState<Record<number, CustomColumnData>>({});
+  const [metricLabel, setMetricLabel] = useState("TVL");
+  const [metricData, setMetricData] = useState<Record<number, MetricRow>>({});
   const lightRef = useRef<HTMLDivElement>(null);
   const darkRef = useRef<HTMLDivElement>(null);
 
@@ -152,11 +194,52 @@ export default function ProjectsPage() {
             </div>
           )}
 
+          {/* Metric column header (for bars-metric) */}
+          {layout === "bars-metric" && (
+            <div style={{ marginBottom: 16 }}>
+              <label style={{ fontSize: 12, color: "rgba(255,255,255,0.5)", display: "block", marginBottom: 4 }}>Metric column header</label>
+              <input value={metricLabel} onChange={(e) => setMetricLabel(e.target.value)} style={inputStyle} placeholder="TVL" />
+            </div>
+          )}
+
           {/* Usernames */}
           <div style={{ marginBottom: 16 }}>
             <label style={{ fontSize: 12, color: "rgba(255,255,255,0.5)", display: "block", marginBottom: 4 }}>Usernames</label>
             <textarea value={input} onChange={(e) => setInput(e.target.value)} placeholder="@AaveAave, @ethena_labs, @penaborata..." rows={3} style={{ ...inputStyle, resize: "vertical" as const }} />
           </div>
+
+          {/* Metric column data editor (for bars-metric, after generate) */}
+          {layout === "bars-metric" && accounts.length > 0 && (
+            <div style={{ marginBottom: 16, background: "rgba(255,255,255,0.02)", borderRadius: 12, padding: 16, border: "1px solid rgba(255,255,255,0.06)" }}>
+              <label style={{ fontSize: 13, fontWeight: 700, color: "rgba(255,255,255,0.6)", display: "block", marginBottom: 8 }}>📈 Metric data per row</label>
+              <div style={{ fontSize: 11, color: "rgba(255,255,255,0.4)", marginBottom: 10 }}>Display = what shows on card (e.g. &quot;$746.7M&quot;). Value = raw number for bar scaling. Diff (optional) = 7d % change, signed.</div>
+              {accounts.map((acc, i) => (
+                <div key={i} style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 8 }}>
+                  <span style={{ width: 140, fontSize: 12, color: "rgba(255,255,255,0.5)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", flexShrink: 0 }}>
+                    {acc.name || `@${acc.username}`}
+                  </span>
+                  <input
+                    value={metricData[i]?.display || ""}
+                    onChange={(e) => setMetricData(prev => ({ ...prev, [i]: { display: e.target.value, value: prev[i]?.value || "", diff: prev[i]?.diff || "" } }))}
+                    placeholder="$746.7M"
+                    style={{ ...inputStyle, flex: 1 }}
+                  />
+                  <input
+                    value={metricData[i]?.value || ""}
+                    onChange={(e) => setMetricData(prev => ({ ...prev, [i]: { display: prev[i]?.display || "", value: e.target.value, diff: prev[i]?.diff || "" } }))}
+                    placeholder="746.7"
+                    style={{ ...inputStyle, width: 100 }}
+                  />
+                  <input
+                    value={metricData[i]?.diff || ""}
+                    onChange={(e) => setMetricData(prev => ({ ...prev, [i]: { display: prev[i]?.display || "", value: prev[i]?.value || "", diff: e.target.value } }))}
+                    placeholder="+7.6"
+                    style={{ ...inputStyle, width: 80 }}
+                  />
+                </div>
+              ))}
+            </div>
+          )}
 
           {/* Custom column data editor (for bars-custom, after generate) */}
           {layout === "bars-custom" && accounts.length > 0 && (
@@ -204,7 +287,7 @@ export default function ProjectsPage() {
             <div>
               <h2 style={{ fontSize: 16, fontWeight: 600, color: "rgba(255,255,255,0.5)", marginBottom: 12 }}>☀️ Light Theme</h2>
               <div style={{ borderRadius: 12, overflow: "auto", border: "1px solid rgba(255,255,255,0.1)" }}>
-                <ProjectsCard ref={lightRef} accounts={accounts} title={title} subtitle={subtitle} diffPeriod={diffPeriod} layout={layout} theme="light" filters={filtersInput.split(",").map(f => f.trim()).filter(f => f)} showTags={showTags} customColumnHeader={customHeader} customColumnData={customData} />
+                <ProjectsCard ref={lightRef} accounts={accounts} title={title} subtitle={subtitle} diffPeriod={diffPeriod} layout={layout} theme="light" filters={filtersInput.split(",").map(f => f.trim()).filter(f => f)} showTags={showTags} customColumnHeader={customHeader} customColumnData={customData} metricColumn={buildMetricColumn(accounts, metricData, metricLabel)} />
               </div>
             </div>
             <div>
