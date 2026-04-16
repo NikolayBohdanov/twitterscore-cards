@@ -24,22 +24,35 @@ export async function takeScreenshot(
   try {
     const page = await browser.newPage();
 
-    // Inject emoji font so headless Chromium can render emoji
-    await page.evaluateOnNewDocument(() => {
-      const style = document.createElement("style");
-      style.textContent = `
-        @import url('https://fonts.googleapis.com/css2?family=Noto+Color+Emoji&display=swap');
-        * { font-family: 'Inter', 'Noto Color Emoji', sans-serif !important; }
-      `;
-      document.head.appendChild(style);
-    });
+    // Font injection now lives in /render/smart-drop/page.tsx as a <style> tag,
+    // so Chromium picks it up during normal page parsing (no timing races).
 
     await page.goto(url, { waitUntil: "networkidle0", timeout: 20000 });
 
     // Wait for the card element to appear
     await page.waitForSelector(selector, { timeout: 15000 });
 
-    // Extra wait for avatars and images to load
+    // Wait for fonts to actually load into the FontFaceSet and be ready to paint.
+    // Without this, networkidle0 can fire before Noto Color Emoji is usable,
+    // leaving tofu boxes where emoji should be.
+    await page.evaluate(() => (document as unknown as { fonts: { ready: Promise<unknown> } }).fonts.ready);
+
+    // Wait for all avatar <img> elements to finish loading (not covered by fonts.ready).
+    await page.evaluate(async () => {
+      const imgs = Array.from(document.images);
+      await Promise.all(
+        imgs.map((img) =>
+          img.complete
+            ? Promise.resolve()
+            : new Promise<void>((res) => {
+                img.onload = () => res();
+                img.onerror = () => res();
+              })
+        )
+      );
+    });
+
+    // Small buffer for final repaint after fonts swap (metrics shift → relayout).
     await new Promise((r) => setTimeout(r, waitMs));
 
     const element = await page.$(selector);

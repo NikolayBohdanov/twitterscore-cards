@@ -124,15 +124,24 @@ function RenderSmartDropInner() {
   };
 
   return (
-    <div style={{ background: theme === "dark" ? "#000" : "#f5f5f5", padding: 0, margin: 0 }}>
-      <div id="card" style={{ display: "inline-block" }}>
-        {version === "v2" ? (
-          <SmartDropCardV2 {...cardProps} />
-        ) : (
-          <SmartDropCard {...cardProps} theme={theme} />
-        )}
+    <>
+      {/* Load Inter (UI font) + Noto Color Emoji (emoji glyphs) for headless Chromium.
+          Must be in JSX so Next.js renders it to <head>; @sparticuz/chromium ships stripped
+          and has no system emoji font → without this, 🚀/🧠/💥 render as empty tofu boxes. */}
+      <style>{`
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Noto+Color+Emoji&display=swap');
+        * { font-family: 'Inter', 'Noto Color Emoji', sans-serif; }
+      `}</style>
+      <div style={{ background: theme === "dark" ? "#000" : "#f5f5f5", padding: 0, margin: 0 }}>
+        <div id="card" style={{ display: "inline-block" }}>
+          {version === "v2" ? (
+            <SmartDropCardV2 {...cardProps} />
+          ) : (
+            <SmartDropCard {...cardProps} theme={theme} />
+          )}
+        </div>
       </div>
-    </div>
+    </>
   );
 }
 
