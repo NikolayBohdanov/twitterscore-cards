@@ -96,23 +96,61 @@ export default function ProjectsPage() {
     setAccounts(sortByScore ? [...originalOrder].sort((a, b) => b.score - a.score) : [...originalOrder]);
   }, [sortByScore, originalOrder]);
 
-  // Auto-swap title/subtitle defaults when user switches layout families.
-  // Leaves custom text alone — only replaces if current text matches the OTHER
-  // layout's default. Lets the starter copy fit the card's real purpose.
-  const BARS_DEFAULT_TITLE = "🚀 Fastest Growing Projects";
-  const BARS_DEFAULT_SUBTITLE = "March 2026 · DeFi Protocols";
-  const METRIC_DEFAULT_TITLE = "📈 Top Projects by TVL";
-  const METRIC_DEFAULT_SUBTITLE = "April 2026 · DeFi";
+  // When layout + data are enough to infer a meaningful title, suggest one.
+  // Only replaces title/subtitle if they still match a previous auto-generated
+  // or default string — never clobbers manual edits.
+  const KNOWN_DEFAULTS = new Set([
+    "🚀 Fastest Growing Projects",
+    "📈 Top Projects by TVL",
+  ]);
+  const KNOWN_SUB_DEFAULTS = new Set([
+    "March 2026 · DeFi Protocols",
+    "April 2026 · DeFi",
+  ]);
   useEffect(() => {
+    // Compose an auto-title from layout + accounts data.
+    // Example: bars-metric + 10 accounts, all category="Derivatives", metricLabel="TVL"
+    //   → "📈 Top 10 Perp DEXs by TVL"  (with human category aliasing)
+    const aliasCategory = (cat: string, plural: boolean): string => {
+      const map: Record<string, string> = {
+        "Derivatives": "Perp DEX",
+        "Prediction Market": "Prediction Market",
+        "RWA": "RWA Platform",
+        "Chain": "Chain",
+      };
+      const base = map[cat] || cat;
+      if (!plural) return base;
+      if (base.endsWith("x") || base.endsWith("s")) return base + "es";
+      return base + "s";
+    };
+
+    const commonCategory = (() => {
+      if (accounts.length === 0) return "";
+      const cats = accounts.map(a => a.category).filter(Boolean);
+      if (cats.length < accounts.length * 0.7) return "";
+      const first = cats[0];
+      return cats.every(c => c === first) ? first : "";
+    })();
+
     if (layout === "bars-metric") {
-      if (title === BARS_DEFAULT_TITLE) setTitle(METRIC_DEFAULT_TITLE);
-      if (subtitle === BARS_DEFAULT_SUBTITLE) setSubtitle(METRIC_DEFAULT_SUBTITLE);
+      const label = metricLabel || "TVL";
+      let autoTitle = `📈 Top Projects by ${label}`;
+      if (accounts.length > 0 && commonCategory) {
+        autoTitle = `📈 Top ${accounts.length} ${aliasCategory(commonCategory, accounts.length !== 1)} by ${label}`;
+      }
+      const autoSubtitle = commonCategory ? `April 2026 · ${aliasCategory(commonCategory, true)}` : "April 2026";
+      if (KNOWN_DEFAULTS.has(title) || title.startsWith("📈 Top Projects by") || title.startsWith("📈 Top ")) {
+        setTitle(autoTitle);
+      }
+      if (KNOWN_SUB_DEFAULTS.has(subtitle)) setSubtitle(autoSubtitle);
     } else {
-      if (title === METRIC_DEFAULT_TITLE) setTitle(BARS_DEFAULT_TITLE);
-      if (subtitle === METRIC_DEFAULT_SUBTITLE) setSubtitle(BARS_DEFAULT_SUBTITLE);
+      if (KNOWN_DEFAULTS.has(title) || title.startsWith("📈 Top ")) {
+        setTitle("🚀 Fastest Growing Projects");
+      }
+      if (KNOWN_SUB_DEFAULTS.has(subtitle)) setSubtitle("March 2026 · DeFi Protocols");
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [layout]);
+  }, [layout, accounts, metricLabel]);
 
   const downloadPng = useCallback(async (ref: React.RefObject<HTMLDivElement | null>, suffix: string) => {
     if (!ref.current) return;
