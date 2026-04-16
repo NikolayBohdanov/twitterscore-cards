@@ -429,21 +429,32 @@ function BarsMetricLayout({ accounts, title, subtitle, theme, showTags = true, m
 
               {/* TwitterScore bar — same gradient logic as BarsLayout:
                   width = scoreToPercent(score) clamped min 12, with scoreBarBgSize
-                  controlling gradient stretch so low scores only show the red portion. */}
-              <div style={{ flex: 1, height: 28, borderRadius: 14, background: b.barBg, overflow: "hidden", display: "flex", marginRight: 10 }}>
-                {scoreToPercent(acc.score) > 0 && (
-                  <div style={{
-                    width: `${Math.max(scoreToPercent(acc.score), 12)}%`, height: "100%", borderRadius: 14,
-                    background: SCORE_GRADIENT, backgroundSize: scoreBarBgSize(acc.score),
-                    backgroundPosition: "left", backgroundRepeat: "no-repeat",
-                    display: "flex", alignItems: "center", justifyContent: "flex-end", paddingRight: 10,
-                  }}>
-                    <span style={{ fontSize: 13, fontWeight: 900, color: "#fff", textShadow: "0 1px 3px rgba(0,0,0,0.5)", whiteSpace: "nowrap" }}>
-                      {formatScore(acc.score)}
-                    </span>
+                  controlling gradient stretch so low scores only show the red portion.
+                  Score growth (weekDiff) shows as ▲+X/▼-X inside the bar. */}
+              {(() => {
+                const sdiff = acc.weekDiff || 0;
+                return (
+                  <div style={{ flex: 1, height: 28, borderRadius: 14, background: b.barBg, overflow: "hidden", display: "flex", marginRight: 10 }}>
+                    {scoreToPercent(acc.score) > 0 && (
+                      <div style={{
+                        width: `${Math.max(scoreToPercent(acc.score), 12)}%`, height: "100%", borderRadius: 14,
+                        background: SCORE_GRADIENT, backgroundSize: scoreBarBgSize(acc.score),
+                        backgroundPosition: "left", backgroundRepeat: "no-repeat",
+                        display: "flex", alignItems: "center", justifyContent: "flex-end", paddingRight: 10,
+                      }}>
+                        <span style={{ fontSize: 13, fontWeight: 900, color: "#fff", textShadow: "0 1px 3px rgba(0,0,0,0.5)", whiteSpace: "nowrap", display: "flex", alignItems: "center", gap: 4 }}>
+                          {formatScore(acc.score)}
+                          {sdiff !== 0 && (
+                            <span style={{ fontSize: 10, fontWeight: 700, color: sdiff > 0 ? "#B6FFD8" : "#FFB6B6" }}>
+                              {sdiff > 0 ? `▲+${Math.abs(Math.round(sdiff))}` : `▼${Math.round(sdiff)}`}
+                            </span>
+                          )}
+                        </span>
+                      </div>
+                    )}
                   </div>
-                )}
-              </div>
+                );
+              })()}
 
               {/* Tags */}
               <div style={{ width: maxTagsWidth, display: "flex", gap: 4, alignItems: "center", justifyContent: "flex-start", flexShrink: 0, marginLeft: 10 }}>
