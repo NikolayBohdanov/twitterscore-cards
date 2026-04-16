@@ -23,6 +23,17 @@ export async function takeScreenshot(
 
   try {
     const page = await browser.newPage();
+
+    // Inject emoji font so headless Chromium can render emoji
+    await page.evaluateOnNewDocument(() => {
+      const style = document.createElement("style");
+      style.textContent = `
+        @import url('https://fonts.googleapis.com/css2?family=Noto+Color+Emoji&display=swap');
+        * { font-family: 'Inter', 'Noto Color Emoji', sans-serif !important; }
+      `;
+      document.head.appendChild(style);
+    });
+
     await page.goto(url, { waitUntil: "networkidle0", timeout: 20000 });
 
     // Wait for the card element to appear
