@@ -360,12 +360,12 @@ function BarsMetricLayout({ accounts, title, subtitle, theme, showTags = true, m
         </div>
       </div>
 
-      {/* Column headers — rank | Project | TS | <metric label> | Tags */}
+      {/* Column headers — rank | Project | <metric label> | TS score bar | Tags */}
+      {/* TVL first (primary metric, sort order), TS as gradient bar (secondary reference) */}
       <div style={{ display: "flex", padding: "0 28px", marginBottom: 4 }}>
         <div style={{ width: 28, marginRight: 12 }} />
         <div style={{ width: 190, fontSize: 11, textTransform: "uppercase", letterSpacing: 1.2, color: b.textFaint, fontWeight: 700 }}>Project</div>
-        <div style={{ width: 60, fontSize: 11, textTransform: "uppercase", letterSpacing: 1.2, color: b.textFaint, fontWeight: 700, textAlign: "center" }}>TS</div>
-        <div style={{ flex: 1, fontSize: 11, textTransform: "uppercase", letterSpacing: 1.2, color: b.textFaint, fontWeight: 700 }}>
+        <div style={{ width: 180, fontSize: 11, textTransform: "uppercase", letterSpacing: 1.2, color: b.textFaint, fontWeight: 700 }}>
           {metric.label}
           {metric.diffs && metric.diffs.length > 0 && (
             <span style={{ marginLeft: 6, fontSize: 10, letterSpacing: 0.8, color: b.textFaint, textTransform: "none", fontWeight: 600 }}>
@@ -373,6 +373,7 @@ function BarsMetricLayout({ accounts, title, subtitle, theme, showTags = true, m
             </span>
           )}
         </div>
+        <div style={{ flex: 1, fontSize: 11, textTransform: "uppercase", letterSpacing: 1.2, color: b.textFaint, fontWeight: 700 }}>TwitterScore</div>
         <div style={{ width: maxTagsWidth, fontSize: 11, textTransform: "uppercase", letterSpacing: 1.2, color: b.textFaint, fontWeight: 700 }}>Tags</div>
       </div>
       <div style={{ height: 1, background: b.borderFaint, margin: "0 28px 4px" }} />
@@ -406,16 +407,10 @@ function BarsMetricLayout({ accounts, title, subtitle, theme, showTags = true, m
                 </span>
               </div>
 
-              {/* TS score (secondary) */}
-              <div style={{ width: 60, textAlign: "center", fontSize: 12, fontWeight: 700, color: b.smartsColor, flexShrink: 0 }}>
-                {acc.score > 0 ? formatScore(acc.score) : "—"}
-              </div>
-
-              {/* Metric column — plain text.
-                  NO filled bar: gradient fill is reserved for TwitterScore rendering,
-                  where bar width encodes score magnitude via scoreBarBgSize. For TVL,
-                  the number alone + a colored delta badge is the clearest signal. */}
-              <div style={{ flex: 1, display: "flex", alignItems: "center", gap: 8, padding: "0 12px" }}>
+              {/* Metric column (TVL / Fundraising) — plain text + colored delta pill.
+                  No gradient fill: gradient is reserved for TwitterScore where bar
+                  width encodes score magnitude via scoreBarBgSize. */}
+              <div style={{ width: 180, display: "flex", alignItems: "center", gap: 8, flexShrink: 0 }}>
                 <span style={{ fontSize: 16, fontWeight: 800, color: b.text, whiteSpace: "nowrap" }}>
                   {display}
                 </span>
@@ -429,6 +424,24 @@ function BarsMetricLayout({ accounts, title, subtitle, theme, showTags = true, m
                   }}>
                     {diff > 0 ? `+${diff.toFixed(1)}%` : `${diff.toFixed(1)}%`}
                   </span>
+                )}
+              </div>
+
+              {/* TwitterScore bar — same gradient logic as BarsLayout:
+                  width = scoreToPercent(score) clamped min 12, with scoreBarBgSize
+                  controlling gradient stretch so low scores only show the red portion. */}
+              <div style={{ flex: 1, height: 28, borderRadius: 14, background: b.barBg, overflow: "hidden", display: "flex", marginRight: 10 }}>
+                {scoreToPercent(acc.score) > 0 && (
+                  <div style={{
+                    width: `${Math.max(scoreToPercent(acc.score), 12)}%`, height: "100%", borderRadius: 14,
+                    background: SCORE_GRADIENT, backgroundSize: scoreBarBgSize(acc.score),
+                    backgroundPosition: "left", backgroundRepeat: "no-repeat",
+                    display: "flex", alignItems: "center", justifyContent: "flex-end", paddingRight: 10,
+                  }}>
+                    <span style={{ fontSize: 13, fontWeight: 900, color: "#fff", textShadow: "0 1px 3px rgba(0,0,0,0.5)", whiteSpace: "nowrap" }}>
+                      {formatScore(acc.score)}
+                    </span>
+                  </div>
                 )}
               </div>
 

@@ -96,6 +96,24 @@ export default function ProjectsPage() {
     setAccounts(sortByScore ? [...originalOrder].sort((a, b) => b.score - a.score) : [...originalOrder]);
   }, [sortByScore, originalOrder]);
 
+  // Auto-swap title/subtitle defaults when user switches layout families.
+  // Leaves custom text alone — only replaces if current text matches the OTHER
+  // layout's default. Lets the starter copy fit the card's real purpose.
+  const BARS_DEFAULT_TITLE = "🚀 Fastest Growing Projects";
+  const BARS_DEFAULT_SUBTITLE = "March 2026 · DeFi Protocols";
+  const METRIC_DEFAULT_TITLE = "📈 Top Projects by TVL";
+  const METRIC_DEFAULT_SUBTITLE = "April 2026 · DeFi";
+  useEffect(() => {
+    if (layout === "bars-metric") {
+      if (title === BARS_DEFAULT_TITLE) setTitle(METRIC_DEFAULT_TITLE);
+      if (subtitle === BARS_DEFAULT_SUBTITLE) setSubtitle(METRIC_DEFAULT_SUBTITLE);
+    } else {
+      if (title === METRIC_DEFAULT_TITLE) setTitle(BARS_DEFAULT_TITLE);
+      if (subtitle === METRIC_DEFAULT_SUBTITLE) setSubtitle(BARS_DEFAULT_SUBTITLE);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [layout]);
+
   const downloadPng = useCallback(async (ref: React.RefObject<HTMLDivElement | null>, suffix: string) => {
     if (!ref.current) return;
     try {
