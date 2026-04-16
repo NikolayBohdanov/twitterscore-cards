@@ -4,11 +4,26 @@ import { forwardRef } from "react";
 import { AccountData } from "./SmartDropCard";
 
 export type ProjectsTheme = "light" | "dark";
-export type ProjectsLayout = "bars" | "bars-custom" | "grid" | "podium" | "tiles";
+export type ProjectsLayout = "bars" | "bars-custom" | "bars-metric" | "grid" | "podium" | "tiles";
 
 export interface CustomColumnData {
   line1: string;
   line2?: string;
+}
+
+/**
+ * Generic metric column for ranking by ANY numeric metric (not TwitterScore).
+ * Used by Leaderboard (TVL) and Funding Rounds (Fundraising amount).
+ *   - `label`: column header, e.g. "TVL", "Fundraising"
+ *   - `displays`: formatted strings per row, e.g. ["$746.7M", "$402.3M"]
+ *   - `values`: optional raw numbers for bar length scaling
+ *   - `diffs`: optional % changes shown as colored badges next to display
+ */
+export interface MetricColumn {
+  label: string;
+  displays: string[];
+  values?: number[];
+  diffs?: number[];
 }
 
 interface Props {
@@ -22,6 +37,7 @@ interface Props {
   showTags?: boolean;
   customColumnHeader?: string;
   customColumnData?: Record<number, CustomColumnData>; // index -> data
+  metricColumn?: MetricColumn; // bars-metric layout data
 }
 
 function getDiff(acc: AccountData, period: "week" | "month"): number {
@@ -281,6 +297,146 @@ function BarsLayout({ accounts, title, subtitle, diffPeriod, theme, showTags = t
                   </div>
                 )}
               </div>
+              <div style={{ width: maxTagsWidth, display: "flex", gap: 4, alignItems: "center", justifyContent: "flex-start", flexShrink: 0, marginLeft: 10 }}>
+                {allTags.slice(0, 3).map((tag, ti) => {
+                  const isCat = ti === 0 && acc.category && !["Top Smart", "Smart", "Rising", "New"].includes(acc.category);
+                  return (
+                    <span key={ti} style={{
+                      background: isCat ? b.catBg : b.tagBg,
+                      color: isCat ? b.catText : b.tagText,
+                      padding: "3px 9px", borderRadius: 8, fontSize: 11, fontWeight: 600, whiteSpace: "nowrap",
+                    }}>{tag}</span>
+                  );
+                })}
+                {allTags.length === 0 && (
+                  <span style={{ color: b.textFaint, fontSize: 11 }}>—</span>
+                )}
+              </div>
+            </div>
+          );
+        })}
+      </div>
+    </SmartWindow>
+  );
+}
+
+// ============ LAYOUT 1C: BARS + GENERIC METRIC (TVL / Fundraising / Revenue) ============
+// Like BarsLayout, but ranks by a custom numeric metric (e.g. TVL) instead of TwitterScore.
+// Bar length scales to max metric value. TS score moves to a secondary column.
+function BarsMetricLayout({ accounts, title, subtitle, theme, showTags = true, metricColumn }: Omit<Props, "layout">) {
+  const b = barsThemes[theme || "dark"];
+  const metric = metricColumn || { label: "Metric", displays: [] as string[] };
+
+  // Tags width (same logic as BarsLayout)
+  const allTagsPerAccount = accounts.map((acc) => {
+    const tags: string[] = [];
+    if (acc.category && !["Top Smart", "Smart", "Rising", "New"].includes(acc.category)) tags.push(acc.category);
+    if (showTags && acc.tags) for (const t of acc.tags) { if (!tags.includes(t)) tags.push(t); }
+    return tags.slice(0, 3);
+  });
+  const maxTagsWidth = Math.max(80, ...allTagsPerAccount.map((tags) => tags.reduce((sum, tag) => sum + tag.length * 7 + 18 + 4, 0)));
+
+  // Bar length scaling — relative to max metric value so #1 fills the bar
+  const rawValues = metric.values || [];
+  const maxVal = rawValues.length ? Math.max(...rawValues) : 1;
+  const barPct = (i: number): number => {
+    if (!rawValues.length || !rawValues[i]) return 0;
+    const raw = (rawValues[i] / maxVal) * 100;
+    return Math.max(raw, 12); // min 12% floor so smallest bar is still visible
+  };
+
+  const rowCount = accounts.length;
+  const rowSpacing = 4;
+  const rowHeight = 52;
+  const fixedHeight = 250;
+  const neededHeight = fixedHeight + rowCount * rowHeight + (rowCount - 1) * rowSpacing;
+  const cardHeight = Math.max(675, neededHeight);
+
+  return (
+    <SmartWindow theme={theme || "dark"} cardHeight={cardHeight}>
+      {/* Header with logo */}
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "10px 28px 8px" }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
+          <img src={b.logo} alt="TwitterScore" style={{ height: 53 }} crossOrigin="anonymous" />
+          <div style={{ width: 1, height: 32, background: b.border }} />
+          <div>
+            <div style={{ fontSize: 22, fontWeight: 900, color: b.text, letterSpacing: -0.5 }}>{title}</div>
+            <div style={{ fontSize: 12, color: b.textSec, marginTop: 2 }}>{subtitle}</div>
+          </div>
+        </div>
+      </div>
+
+      {/* Column headers — rank | Project | TS | <metric label> | Tags */}
+      <div style={{ display: "flex", padding: "0 28px", marginBottom: 4 }}>
+        <div style={{ width: 28, marginRight: 12 }} />
+        <div style={{ width: 190, fontSize: 11, textTransform: "uppercase", letterSpacing: 1.2, color: b.textFaint, fontWeight: 700 }}>Project</div>
+        <div style={{ width: 60, fontSize: 11, textTransform: "uppercase", letterSpacing: 1.2, color: b.textFaint, fontWeight: 700, textAlign: "center" }}>TS</div>
+        <div style={{ flex: 1, fontSize: 11, textTransform: "uppercase", letterSpacing: 1.2, color: b.textFaint, fontWeight: 700 }}>{metric.label}</div>
+        <div style={{ width: maxTagsWidth, fontSize: 11, textTransform: "uppercase", letterSpacing: 1.2, color: b.textFaint, fontWeight: 700 }}>Tags</div>
+      </div>
+      <div style={{ height: 1, background: b.borderFaint, margin: "0 28px 4px" }} />
+
+      {/* Rows */}
+      <div style={{ flex: 1, display: "flex", flexDirection: "column", gap: rowSpacing, padding: "0 20px", overflow: "hidden", minHeight: 0 }}>
+        {accounts.map((acc, i) => {
+          const display = metric.displays[i] || "—";
+          const diff = metric.diffs?.[i];
+          const pct = barPct(i);
+          const allTags: string[] = [];
+          if (acc.category && !["Top Smart", "Smart", "Rising", "New"].includes(acc.category)) allTags.push(acc.category);
+          if (showTags && acc.tags) for (const t of acc.tags) { if (!allTags.includes(t)) allTags.push(t); }
+
+          return (
+            <div key={i} style={{
+              display: "flex", alignItems: "center", height: rowHeight, padding: "0 12px",
+              borderRadius: 8, background: i % 2 === 0 ? b.rowBg : "transparent",
+            }}>
+              {/* Rank */}
+              <div style={{ width: 28, fontSize: i < 3 ? 17 : 13, fontWeight: 700, color: i >= 3 ? b.textMuted : undefined, textAlign: "center", marginRight: 12 }}>{getRankDisplay(i)}</div>
+
+              {/* Project name + avatar */}
+              <div style={{ width: 190, display: "flex", alignItems: "center", gap: 10, flexShrink: 0 }}>
+                <div style={{ width: 40, height: 40, borderRadius: "50%", overflow: "hidden", border: `2px solid ${b.avatarBorder}`, background: b.avatarBg, flexShrink: 0, display: "flex", alignItems: "center", justifyContent: "center" }}>
+                  {acc.avatar
+                    ? <img src={acc.avatar} style={{ width: "100%", height: "100%", objectFit: "cover" }} crossOrigin="anonymous" />
+                    : <span style={{ color: b.avatarText, fontWeight: 700, fontSize: 15 }}>{(acc.name || acc.username)[0]?.toUpperCase()}</span>}
+                </div>
+                <span style={{ fontSize: 13, fontWeight: 700, color: b.text, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis", flex: 1 }}>
+                  {acc.name || acc.username}
+                </span>
+              </div>
+
+              {/* TS score (secondary) */}
+              <div style={{ width: 60, textAlign: "center", fontSize: 12, fontWeight: 700, color: b.smartsColor, flexShrink: 0 }}>
+                {acc.score > 0 ? formatScore(acc.score) : "—"}
+              </div>
+
+              {/* Metric bar */}
+              <div style={{ flex: 1, height: 28, borderRadius: 14, background: b.barBg, overflow: "hidden", display: "flex" }}>
+                {pct > 0 && (
+                  <div style={{
+                    width: `${pct}%`, height: "100%", borderRadius: 14,
+                    background: SCORE_GRADIENT,
+                    display: "flex", alignItems: "center", justifyContent: "flex-end", paddingRight: 10,
+                  }}>
+                    <span style={{ fontSize: 12, fontWeight: 900, color: "#fff", textShadow: "0 1px 3px rgba(0,0,0,0.5)", display: "flex", alignItems: "center", gap: 6 }}>
+                      {display}
+                      {diff !== undefined && diff !== 0 && (
+                        <span style={{ fontSize: 10, fontWeight: 700, color: diff > 0 ? "#B6FFD8" : "#FFB6B6" }}>
+                          {diff > 0 ? `▲+${diff.toFixed(1)}%` : `▼${diff.toFixed(1)}%`}
+                        </span>
+                      )}
+                    </span>
+                  </div>
+                )}
+                {pct === 0 && (
+                  <div style={{ padding: "0 10px", display: "flex", alignItems: "center", color: b.textMuted, fontSize: 12, fontWeight: 700 }}>
+                    {display}
+                  </div>
+                )}
+              </div>
+
+              {/* Tags */}
               <div style={{ width: maxTagsWidth, display: "flex", gap: 4, alignItems: "center", justifyContent: "flex-start", flexShrink: 0, marginLeft: 10 }}>
                 {allTags.slice(0, 3).map((tag, ti) => {
                   const isCat = ti === 0 && acc.category && !["Top Smart", "Smart", "Rising", "New"].includes(acc.category);
@@ -703,11 +859,18 @@ function TilesLayout({ accounts, title, subtitle, diffPeriod, theme, filters, sh
 
 // ============ MAIN COMPONENT ============
 const ProjectsCard = forwardRef<HTMLDivElement, Props>(
-  ({ accounts, title, subtitle, diffPeriod, layout, theme = "dark", filters, showTags = true, customColumnHeader, customColumnData }, ref) => {
+  ({ accounts, title, subtitle, diffPeriod, layout, theme = "dark", filters, showTags = true, customColumnHeader, customColumnData, metricColumn }, ref) => {
     if (layout === "bars-custom") {
       return (
         <div ref={ref}>
           <BarsCustomLayout accounts={accounts} title={title} subtitle={subtitle} diffPeriod={diffPeriod} theme={theme} filters={filters} showTags={showTags} customColumnHeader={customColumnHeader} customColumnData={customColumnData} />
+        </div>
+      );
+    }
+    if (layout === "bars-metric") {
+      return (
+        <div ref={ref}>
+          <BarsMetricLayout accounts={accounts} title={title} subtitle={subtitle} diffPeriod={diffPeriod} theme={theme} filters={filters} showTags={showTags} metricColumn={metricColumn} />
         </div>
       );
     }
