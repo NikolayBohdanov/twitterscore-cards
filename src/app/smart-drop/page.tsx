@@ -216,15 +216,23 @@ export default function SmartDropPage() {
                   )}
                 </div>
                 <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
-                  {([
-                    ["title", "Title", overrides.title],
-                    ["subtitle", "Subtitle", overrides.subtitle || `Week #${weekNumber}`],
-                    ["headerSubtitle", "Header Subtitle (e.g. March 2026 · DeFi Protocols)", overrides.headerSubtitle],
-                    ["counterLabel", "Counter Label", overrides.counterLabel || `Smart Accounts · +${accounts.length} new`],
-                    ["footerLeft", "Footer Left", overrides.footerLeft],
-                    ["footerCenter", "Footer Center", overrides.footerCenter],
-                    ["footerRight", "Footer Right", overrides.footerRight],
-                  ] as [keyof CardTextOverrides, string, string][]).map(([key, label, val]) => (
+                  {((version === "v1" ? [
+                    ["titleBarText" as const, "Window Title (title bar)", overrides.titleBarText || "TwitterScore Database"],
+                    ["title" as const, "Header Title (green text)", overrides.title],
+                    ["headerSubtitle" as const, "Header Subtitle (below title)", overrides.headerSubtitle],
+                    ["counterLabel" as const, "Counter Label (right side)", overrides.counterLabel || `Smart Accounts · +${accounts.length} new`],
+                    ["footerLeft" as const, "Footer Left", overrides.footerLeft],
+                    ["footerCenter" as const, "Footer Center", overrides.footerCenter],
+                    ["footerRight" as const, "Footer Right", overrides.footerRight],
+                  ] : [
+                    ["title" as const, "Title", overrides.title],
+                    ["subtitle" as const, "Subtitle", overrides.subtitle || `Week #${weekNumber}`],
+                    ["headerSubtitle" as const, "Header Subtitle", overrides.headerSubtitle],
+                    ["counterLabel" as const, "Counter Label", overrides.counterLabel || `Smart Accounts · +${accounts.length} new`],
+                    ["footerLeft" as const, "Footer Left", overrides.footerLeft],
+                    ["footerCenter" as const, "Footer Center", overrides.footerCenter],
+                    ["footerRight" as const, "Footer Right", overrides.footerRight],
+                  ]) as [keyof CardTextOverrides, string, string][]).map(([key, label, val]) => (
                     <div key={key}>
                       <label style={{ fontSize: 10, color: "rgba(255,255,255,0.35)", display: "block", marginBottom: 3 }}>{label}</label>
                       <input

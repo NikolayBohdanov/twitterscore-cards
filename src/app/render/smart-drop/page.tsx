@@ -64,6 +64,7 @@ function RenderSmartDropInner() {
     footerLeft: searchParams.get("footerLeft") || DEFAULT_OVERRIDES.footerLeft,
     footerCenter: searchParams.get("footerCenter") || DEFAULT_OVERRIDES.footerCenter,
     footerRight: searchParams.get("footerRight") || DEFAULT_OVERRIDES.footerRight,
+    titleBarText: searchParams.get("titleBarText") || DEFAULT_OVERRIDES.titleBarText,
   };
 
   // Auto-fetch on mount

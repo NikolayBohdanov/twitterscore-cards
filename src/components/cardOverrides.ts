@@ -6,6 +6,7 @@ export interface CardTextOverrides {
   footerLeft: string;
   footerCenter: string;
   footerRight: string;
+  titleBarText: string;
 }
 
 export const DEFAULT_OVERRIDES: CardTextOverrides = {
@@ -16,6 +17,7 @@ export const DEFAULT_OVERRIDES: CardTextOverrides = {
   footerLeft: "twitterscore.io",
   footerCenter: "11M+ Accounts Tracked · Real-Time Scoring",
   footerRight: "@Twiter_score",
+  titleBarText: "TwitterScore Database",
 };
 
 export function getTitle(o?: CardTextOverrides) {
@@ -42,4 +44,8 @@ export function getFooterCenter(o?: CardTextOverrides) {
 
 export function getFooterRight(o?: CardTextOverrides) {
   return o?.footerRight || DEFAULT_OVERRIDES.footerRight;
+}
+
+export function getTitleBarText(o?: CardTextOverrides) {
+  return o?.titleBarText || DEFAULT_OVERRIDES.titleBarText;
 }

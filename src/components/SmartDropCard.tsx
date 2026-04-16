@@ -1,7 +1,7 @@
 "use client";
 
 import { forwardRef } from "react";
-import { CardTextOverrides, getTitle, getCounterLabel, getFooterLeft, getFooterCenter, getFooterRight } from "./cardOverrides";
+import { CardTextOverrides, getTitle, getCounterLabel, getFooterLeft, getFooterCenter, getFooterRight, getTitleBarText } from "./cardOverrides";
 
 export interface AccountData {
   username: string;
@@ -188,7 +188,7 @@ const SmartDropCard = forwardRef<HTMLDivElement, Props>(
             <div style={{ width: 12, height: 12, borderRadius: "50%", background: "#FEBC2E" }} />
             <div style={{ width: 12, height: 12, borderRadius: "50%", background: "#28C840" }} />
             <div style={{ flex: 1, textAlign: "center" }}>
-              <span style={{ fontSize: 14, color: c.titleText, fontWeight: 600 }}>TwitterScore Database</span>
+              <span style={{ fontSize: 14, color: c.titleText, fontWeight: 600 }}>{getTitleBarText(overrides)}</span>
             </div>
           </div>
 
