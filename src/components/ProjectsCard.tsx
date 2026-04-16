@@ -369,7 +369,7 @@ function BarsMetricLayout({ accounts, title, subtitle, theme, showTags = true, m
           {metric.label}
           {metric.diffs && metric.diffs.length > 0 && (
             <span style={{ marginLeft: 6, fontSize: 10, letterSpacing: 0.8, color: b.textFaint, textTransform: "none", fontWeight: 600 }}>
-              (30d)
+              (7d)
             </span>
           )}
         </div>
