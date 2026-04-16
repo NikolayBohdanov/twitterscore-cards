@@ -369,7 +369,7 @@ function BarsMetricLayout({ accounts, title, subtitle, theme, showTags = true, m
           {metric.label}
           {metric.diffs && metric.diffs.length > 0 && (
             <span style={{ marginLeft: 6, fontSize: 10, letterSpacing: 0.8, color: b.textFaint, textTransform: "none", fontWeight: 600 }}>
-              (7d)
+              (30d)
             </span>
           )}
         </div>
@@ -427,16 +427,12 @@ function BarsMetricLayout({ accounts, title, subtitle, theme, showTags = true, m
                 )}
               </div>
 
-              {/* TwitterScore bar — same gradient logic as BarsLayout:
-                  width = scoreToPercent(score) clamped min 12, with scoreBarBgSize
-                  controlling gradient stretch so low scores only show the red portion.
-                  Growth arrow: prefer weekDiff, fall back to monthDiff when API
-                  returns 0 for week (TwitterScore API often rounds weekDiff → 0 for
-                  stable established accounts; monthDiff is usually where the signal is). */}
+              {/* TwitterScore bar — same gradient logic as BarsLayout.
+                  Growth arrow: 30-day change (monthDiff) for consistency with TVL column.
+                  TwitterScore /api/score returns weekDiff rounded to 0 for most
+                  stable accounts anyway, so month is the signal-carrying window. */}
               {(() => {
-                const sdiff = acc.weekDiff !== undefined && acc.weekDiff !== 0
-                  ? acc.weekDiff
-                  : (acc.monthDiff || 0);
+                const sdiff = acc.monthDiff || 0;
                 return (
                   <div style={{ flex: 1, height: 28, borderRadius: 14, background: b.barBg, overflow: "hidden", display: "flex", marginRight: 10 }}>
                     {scoreToPercent(acc.score) > 0 && (
@@ -449,8 +445,15 @@ function BarsMetricLayout({ accounts, title, subtitle, theme, showTags = true, m
                         <span style={{ fontSize: 13, fontWeight: 900, color: "#fff", textShadow: "0 1px 3px rgba(0,0,0,0.5)", whiteSpace: "nowrap", display: "flex", alignItems: "center", gap: 4 }}>
                           {formatScore(acc.score)}
                           {sdiff !== 0 && (
-                            <span style={{ fontSize: 10, fontWeight: 700, color: sdiff > 0 ? "#B6FFD8" : "#FFB6B6" }}>
-                              {sdiff > 0 ? `▲+${Math.abs(Math.round(sdiff))}` : `▼${Math.round(sdiff)}`}
+                            <span style={{ fontSize: 10, fontWeight: 700, color: sdiff > 0 ? "#B6FFD8" : "#FFB6B6", display: "inline-flex", alignItems: "center", gap: 2 }}>
+                              {/* Inline SVG triangle — Google Fonts Inter doesn't load the
+                                  Geometric Shapes unicode subset, so ▲/▼ render as tofu "||". */}
+                              <svg width="7" height="7" viewBox="0 0 10 10" style={{ flexShrink: 0 }} aria-hidden="true">
+                                {sdiff > 0
+                                  ? <path d="M5 1 L9 8 L1 8 Z" fill="currentColor" />
+                                  : <path d="M5 9 L1 2 L9 2 Z" fill="currentColor" />}
+                              </svg>
+                              {sdiff > 0 ? `+${Math.abs(Math.round(sdiff))}` : `${Math.round(sdiff)}`}
                             </span>
                           )}
                         </span>
