@@ -217,6 +217,7 @@ export default function SmartDropPage() {
                 <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
                   {((version === "v1" ? [
                     ["titleBarText" as const, "Window Title (title bar)", overrides.titleBarText || "TwitterScore Database"],
+                    ["title" as const, "Main Title (green text)", overrides.title],
                     ["headerSubtitle" as const, "Header Subtitle (below title)", overrides.headerSubtitle],
                     ["counterLabel" as const, "Counter Label (right side)", overrides.counterLabel || `Smart Accounts · +${accounts.length} new`],
                     ["footerLeft" as const, "Footer Left", overrides.footerLeft],

@@ -38,7 +38,7 @@ const themes = {
     bg: "white", text: "#0F172A", textSec: "#94A3B8", textMuted: "#64748B",
     accent: "#0544FD", accentLight: "#F0F4FF", border: "#E2E8F0",
     rowEven: "#F8FAFC", rowOdd: "white", barBg: "#F1F5F9",
-    badgeBg: "#ECFDF5", badgeText: "#059669", logo: "/logo-blue.svg",
+    badgeBg: "#ECFDF5", badgeText: "#059669", logo: "/logo-horizontal-blue.svg",
     avatarBorder: "#E2E8F0", avatarBg: "#F1F5F9",
   },
   dark: {
