@@ -411,23 +411,38 @@ function BarsMetricLayout({ accounts, title, subtitle, theme, showTags = true, m
                 {acc.score > 0 ? formatScore(acc.score) : "—"}
               </div>
 
-              {/* Metric bar */}
-              <div style={{ flex: 1, height: 28, borderRadius: 14, background: b.barBg, overflow: "hidden", display: "flex" }}>
+              {/* Metric bar. If bar is too narrow to fit the display text (<30%),
+                  render the label OUTSIDE the bar on the right — avoids clipping
+                  like "$62.2M" becoming "2M" when only 12% of the row is filled. */}
+              <div style={{ flex: 1, height: 28, borderRadius: 14, background: b.barBg, overflow: "hidden", display: "flex", alignItems: "center", position: "relative" }}>
                 {pct > 0 && (
                   <div style={{
                     width: `${pct}%`, height: "100%", borderRadius: 14,
                     background: SCORE_GRADIENT,
-                    display: "flex", alignItems: "center", justifyContent: "flex-end", paddingRight: 10,
+                    display: "flex", alignItems: "center", justifyContent: "flex-end", paddingRight: pct >= 30 ? 10 : 0,
+                    flexShrink: 0,
                   }}>
-                    <span style={{ fontSize: 12, fontWeight: 900, color: "#fff", textShadow: "0 1px 3px rgba(0,0,0,0.5)", display: "flex", alignItems: "center", gap: 6 }}>
-                      {display}
-                      {diff !== undefined && diff !== 0 && (
-                        <span style={{ fontSize: 10, fontWeight: 700, color: diff > 0 ? "#B6FFD8" : "#FFB6B6" }}>
-                          {diff > 0 ? `▲+${diff.toFixed(1)}%` : `▼${diff.toFixed(1)}%`}
-                        </span>
-                      )}
-                    </span>
+                    {pct >= 30 && (
+                      <span style={{ fontSize: 12, fontWeight: 900, color: "#fff", textShadow: "0 1px 3px rgba(0,0,0,0.5)", display: "flex", alignItems: "center", gap: 6, whiteSpace: "nowrap" }}>
+                        {display}
+                        {diff !== undefined && diff !== 0 && (
+                          <span style={{ fontSize: 10, fontWeight: 700, color: diff > 0 ? "#B6FFD8" : "#FFB6B6" }}>
+                            {diff > 0 ? `▲+${diff.toFixed(1)}%` : `▼${diff.toFixed(1)}%`}
+                          </span>
+                        )}
+                      </span>
+                    )}
                   </div>
+                )}
+                {pct > 0 && pct < 30 && (
+                  <span style={{ fontSize: 12, fontWeight: 800, color: b.text, marginLeft: 8, display: "flex", alignItems: "center", gap: 6, whiteSpace: "nowrap" }}>
+                    {display}
+                    {diff !== undefined && diff !== 0 && (
+                      <span style={{ fontSize: 10, fontWeight: 700, color: diff > 0 ? "#22C55E" : "#EF4444" }}>
+                        {diff > 0 ? `▲+${diff.toFixed(1)}%` : `▼${diff.toFixed(1)}%`}
+                      </span>
+                    )}
+                  </span>
                 )}
                 {pct === 0 && (
                   <div style={{ padding: "0 10px", display: "flex", alignItems: "center", color: b.textMuted, fontSize: 12, fontWeight: 700 }}>
