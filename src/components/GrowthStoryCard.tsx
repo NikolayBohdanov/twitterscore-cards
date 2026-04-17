@@ -32,6 +32,24 @@ export interface GrowthStoryProps {
   theme?: "dark" | "light";
 }
 
+// Shared with other *BarsLayout: red→yellow→green gradient where visible portion
+// depends on score magnitude. Low TS only shows red, high TS reaches green.
+const SCORE_GRADIENT = "linear-gradient(90deg, #FF4B04 0%, #F2DB06 52%, #12E83B 100%)";
+
+function scoreToPercent(score: number): number {
+  if (score <= 0) return 0;
+  // Official TwitterScore formula: y = round(⁴√(score × 100000))
+  return Math.min(Math.round(Math.pow(score * 100000, 0.25)), 100);
+}
+
+function scoreBarBgSize(score: number): string {
+  const pct = scoreToPercent(score);
+  if (pct <= 0) return "100% 100%";
+  // Stretches the gradient so that the `pct`% visible at the left lands on the
+  // matching gradient stop — TS=25 shows only the first 25% of the gradient.
+  return `${(100 / pct) * 100}% 100%`;
+}
+
 const themes = {
   dark: {
     outerBg:
@@ -331,115 +349,146 @@ const GrowthStoryCard = forwardRef<HTMLDivElement, GrowthStoryProps>(
             </div>
           </div>
 
-          {/* Platform row */}
+          {/* Platform row — centered with fixed tile width (not full-bleed).
+              Each tile: avatar → name → TS score → context → score bar at bottom. */}
           {platforms.length > 0 && (
             <div
               style={{
                 display: "flex",
-                gap: 10,
-                padding: "0 32px 16px",
+                gap: 12,
+                padding: "0 32px 18px",
                 alignItems: "stretch",
+                justifyContent: "center",
                 flex: 1,
                 minHeight: 0,
               }}
             >
-              {platforms.slice(0, 5).map((p, i) => (
-                <div
-                  key={i}
-                  style={{
-                    flex: 1,
-                    background: c.platformBg,
-                    border: `1px solid ${c.platformBorder}`,
-                    borderRadius: 14,
-                    padding: "12px 14px",
-                    display: "flex",
-                    flexDirection: "column",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    gap: 6,
-                    minWidth: 0,
-                  }}
-                >
+              {platforms.slice(0, 5).map((p, i) => {
+                const pct = scoreToPercent(p.score ?? 0);
+                return (
                   <div
+                    key={i}
                     style={{
-                      width: 44,
-                      height: 44,
-                      borderRadius: "50%",
-                      overflow: "hidden",
-                      border: `2px solid ${c.avatarBorder}`,
-                      background: c.avatarBg,
-                      flexShrink: 0,
+                      width: 200,
+                      background: c.platformBg,
+                      border: `1px solid ${c.platformBorder}`,
+                      borderRadius: 14,
+                      padding: "14px 12px 12px",
                       display: "flex",
+                      flexDirection: "column",
                       alignItems: "center",
-                      justifyContent: "center",
+                      justifyContent: "space-between",
+                      gap: 6,
                     }}
                   >
-                    {p.avatar ? (
-                      <img
-                        src={p.avatar}
-                        alt={p.name || p.handle}
-                        style={{ width: "100%", height: "100%", objectFit: "cover" }}
-                        crossOrigin="anonymous"
-                      />
-                    ) : (
-                      <span
+                    {/* Top block: avatar + name + TS + tag */}
+                    <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 6, width: "100%" }}>
+                      <div
                         style={{
-                          color: c.avatarText,
-                          fontWeight: 700,
-                          fontSize: 16,
+                          width: 48,
+                          height: 48,
+                          borderRadius: "50%",
+                          overflow: "hidden",
+                          border: `2px solid ${c.avatarBorder}`,
+                          background: c.avatarBg,
+                          flexShrink: 0,
+                          display: "flex",
+                          alignItems: "center",
+                          justifyContent: "center",
                         }}
                       >
-                        {(p.name || p.handle)[0]?.toUpperCase()}
-                      </span>
+                        {p.avatar ? (
+                          <img
+                            src={p.avatar}
+                            alt={p.name || p.handle}
+                            style={{ width: "100%", height: "100%", objectFit: "cover" }}
+                            crossOrigin="anonymous"
+                          />
+                        ) : (
+                          <span
+                            style={{
+                              color: c.avatarText,
+                              fontWeight: 700,
+                              fontSize: 18,
+                            }}
+                          >
+                            {(p.name || p.handle)[0]?.toUpperCase()}
+                          </span>
+                        )}
+                      </div>
+                      <div
+                        style={{
+                          fontSize: 14,
+                          fontWeight: 800,
+                          color: c.text,
+                          whiteSpace: "nowrap",
+                          overflow: "hidden",
+                          textOverflow: "ellipsis",
+                          maxWidth: "100%",
+                          textAlign: "center",
+                        }}
+                      >
+                        {p.name || p.handle}
+                      </div>
+                      {p.score !== undefined && p.score > 0 && (
+                        <div
+                          style={{
+                            fontSize: 12,
+                            color: c.accent,
+                            fontWeight: 700,
+                          }}
+                        >
+                          TS: {Math.round(p.score)}
+                        </div>
+                      )}
+                      {p.tag && (
+                        <div
+                          style={{
+                            fontSize: 10,
+                            color: c.textFaint,
+                            textAlign: "center",
+                            lineHeight: 1.2,
+                            fontWeight: 500,
+                            overflow: "hidden",
+                            textOverflow: "ellipsis",
+                            whiteSpace: "nowrap",
+                            maxWidth: "100%",
+                          }}
+                        >
+                          {p.tag}
+                        </div>
+                      )}
+                    </div>
+
+                    {/* TS progress bar — same gradient-stretch logic as BarsLayout,
+                        so low scores only show red portion, high scores reach green. */}
+                    {p.score !== undefined && p.score > 0 && (
+                      <div
+                        style={{
+                          width: "100%",
+                          height: 8,
+                          borderRadius: 4,
+                          background: c.avatarBg,
+                          overflow: "hidden",
+                          marginTop: 6,
+                        }}
+                      >
+                        <div
+                          style={{
+                            width: `${Math.max(pct, 6)}%`,
+                            height: "100%",
+                            background: SCORE_GRADIENT,
+                            backgroundSize: scoreBarBgSize(p.score ?? 0),
+                            backgroundPosition: "left",
+                            backgroundRepeat: "no-repeat",
+                            borderRadius: 4,
+                          }}
+                        />
+                      </div>
                     )}
                   </div>
-                  <div
-                    style={{
-                      fontSize: 13,
-                      fontWeight: 800,
-                      color: c.text,
-                      whiteSpace: "nowrap",
-                      overflow: "hidden",
-                      textOverflow: "ellipsis",
-                      maxWidth: "100%",
-                    }}
-                  >
-                    {p.name || p.handle}
-                  </div>
-                  {p.score !== undefined && p.score > 0 && (
-                    <div
-                      style={{
-                        fontSize: 11,
-                        color: c.accent,
-                        fontWeight: 700,
-                      }}
-                    >
-                      TS: {Math.round(p.score)}
-                    </div>
-                  )}
-                  {p.tag && (
-                    <div
-                      style={{
-                        fontSize: 10,
-                        color: c.textFaint,
-                        textAlign: "center",
-                        lineHeight: 1.2,
-                        fontWeight: 500,
-                        overflow: "hidden",
-                        textOverflow: "ellipsis",
-                        whiteSpace: "nowrap",
-                        maxWidth: "100%",
-                      }}
-                    >
-                      {p.tag}
-                    </div>
-                  )}
-                </div>
-              ))}
-              {/* Pad remaining slots so row stays balanced when platforms < 5 */}
-              {Array.from({ length: Math.max(0, 5 - platformCount) }).map((_, i) => (
-                <div key={`pad-${i}`} style={{ flex: 1 }} />
-              ))}
+                );
+              })}
             </div>
           )}
 
