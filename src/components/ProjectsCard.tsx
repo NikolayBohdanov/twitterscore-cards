@@ -83,6 +83,30 @@ function scoreBarBgSize(score: number): string {
 
 const SCORE_GRADIENT = "linear-gradient(90deg, #FF4B04 0%, #F2DB06 52%, #12E83B 100%)";
 
+// SVG triangle badge — replaces unicode ▲/▼ which render as tofu "||" in
+// headless Chromium (Google Fonts Inter lazy-loads Geometric Shapes subset).
+function DiffBadge({ diff, upColor, downColor, fontSize = 10 }: {
+  diff: number;
+  upColor?: string;
+  downColor?: string;
+  fontSize?: number;
+}) {
+  if (!diff) return null;
+  const isUp = diff > 0;
+  const color = isUp ? (upColor || "#B6FFD8") : (downColor || "#FFB6B6");
+  const size = fontSize - 2;
+  return (
+    <span style={{ fontSize, fontWeight: 700, color, display: "inline-flex", alignItems: "center", gap: 2, whiteSpace: "nowrap" }}>
+      <svg width={size} height={size} viewBox="0 0 10 10" style={{ flexShrink: 0 }} aria-hidden="true">
+        {isUp
+          ? <path d="M5 1 L9 8 L1 8 Z" fill="currentColor" />
+          : <path d="M5 9 L1 2 L9 2 Z" fill="currentColor" />}
+      </svg>
+      {isUp ? `+${Math.abs(Math.round(diff))}` : `${Math.round(diff)}`}
+    </span>
+  );
+}
+
 interface ThemeColors {
   bg: string; cardBg: string; border: string; headerBg: string;
   text: string; textSec: string; textMuted: string; scoreBar: string;
@@ -292,7 +316,7 @@ function BarsLayout({ accounts, title, subtitle, diffPeriod, theme, showTags = t
                   }}>
                     <span style={{ fontSize: 13, fontWeight: 900, color: "#fff", textShadow: "0 1px 3px rgba(0,0,0,0.5)", display: "flex", alignItems: "center", gap: 4 }}>
                       {formatScore(acc.score)}
-                      {diff !== 0 && <span style={{ fontSize: 10, fontWeight: 700, color: diff > 0 ? "#B6FFD8" : "#FFB6B6" }}>{diff > 0 ? `▲+${Math.abs(Math.round(diff))}` : `▼${Math.round(diff)}`}</span>}
+                      {diff !== 0 && <DiffBadge diff={diff} />}
                     </span>
                   </div>
                 )}
@@ -568,7 +592,7 @@ function BarsCustomLayout({ accounts, title, subtitle, diffPeriod, theme, showTa
                   }}>
                     <span style={{ fontSize: 13, fontWeight: 900, color: "#fff", textShadow: "0 1px 3px rgba(0,0,0,0.5)", display: "flex", alignItems: "center", gap: 4 }}>
                       {formatScore(acc.score)}
-                      {diff !== 0 && <span style={{ fontSize: 10, fontWeight: 700, color: diff > 0 ? "#B6FFD8" : "#FFB6B6" }}>{diff > 0 ? `▲+${Math.abs(Math.round(diff))}` : `▼${Math.round(diff)}`}</span>}
+                      {diff !== 0 && <DiffBadge diff={diff} />}
                     </span>
                   </div>
                 )}
