@@ -349,15 +349,17 @@ const GrowthStoryCard = forwardRef<HTMLDivElement, GrowthStoryProps>(
             </div>
           </div>
 
-          {/* Platform row — centered with fixed tile width (not full-bleed).
-              Each tile: avatar → name → TS score → context → score bar at bottom. */}
+          {/* Platform row — natural-height tiles centered in available vertical space.
+              alignItems: center (not stretch) keeps tiles compact; justifyContent: center
+              horizontally centers the group. flex: 1 lets the row claim remaining vertical
+              space and center-align tiles within it, so there's no dead zone underneath. */}
           {platforms.length > 0 && (
             <div
               style={{
                 display: "flex",
                 gap: 12,
                 padding: "0 32px 18px",
-                alignItems: "stretch",
+                alignItems: "center",
                 justifyContent: "center",
                 flex: 1,
                 minHeight: 0,
@@ -373,11 +375,10 @@ const GrowthStoryCard = forwardRef<HTMLDivElement, GrowthStoryProps>(
                       background: c.platformBg,
                       border: `1px solid ${c.platformBorder}`,
                       borderRadius: 14,
-                      padding: "14px 12px 12px",
+                      padding: "14px 12px 14px",
                       display: "flex",
                       flexDirection: "column",
                       alignItems: "center",
-                      justifyContent: "space-between",
                       gap: 6,
                     }}
                   >
