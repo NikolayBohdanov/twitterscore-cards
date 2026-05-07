@@ -121,7 +121,7 @@ const FeatureReleaseCard = forwardRef<HTMLDivElement, FeatureReleaseProps>(
                     width: 22, height: 22, borderRadius: 7, flexShrink: 0, marginTop: 1,
                     background: c.accentBg, border: `1px solid ${c.accentBorder}`,
                     display: "flex", alignItems: "center", justifyContent: "center",
-                    fontSize: 12, fontWeight: 700, color: c.accent,
+                    fontSize: 14, fontWeight: 800, color: c.text,
                   }}>✓</div>
                   <div style={{ fontSize: 14, color: c.text, fontWeight: 500, lineHeight: 1.5 }}>{b}</div>
                 </div>
